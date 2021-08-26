@@ -1,39 +1,39 @@
-import { ConnectionOptions } from 'typeorm';
+import { NestFactory } from '@nestjs/core';
+import { PostgresConfigModule } from './configuration/configuration.module';
+import { PostgresConfigService } from './configuration/configuration.service';
 
-import * as dotenv from 'dotenv';
-import * as fs from 'fs';
-import { UsersEntity } from '../../../models/users/entities/users.entity';
+async function bootstrap() {
+  const appContext = await NestFactory.createApplicationContext(
+    PostgresConfigModule,
+  );
 
-const environment = process.env.NODE_ENV || 'development';
-const data: any = dotenv.parse(fs.readFileSync(`.env.${environment}`));
+  try {
+    const postgresConfigService = appContext.get(PostgresConfigService);
+    return {
+      type: 'postgres',
+      host: postgresConfigService.host,
+      port: postgresConfigService.port,
+      username: postgresConfigService.username,
+      password: postgresConfigService.password,
+      database: postgresConfigService.name,
+      entities: [`${process.cwd()}/src/**/*.entity{.ts,.js}`],
+      synchronize: true,
+      migrationsRun: false,
+      logging: true,
+      logger: 'file',
+      seeds: [`${process.cwd()}/src/database/seeds/**/*{.ts,.js}`],
+      factories: [`${process.cwd()}/src/database/factories/**/*{.ts,.js}`],
+      migrations: [`${process.cwd()}/src/database/migrations/**/*{.ts,.js}`],
+      cli: {
+        migrationsDir: `src/database/migrations`,
+      },
+    };
+  } catch (error) {
+    console.log(error);
+    throw error;
+  } finally {
+    await appContext.close();
+  }
+}
 
-console.log(data);
-
-// Check typeORM documentation for more information.
-const config: ConnectionOptions & { seeds: any; factories: any } = {
-  type: 'postgres',
-  host: data.DATABASE_HOST,
-  port: data.DATABASE_PORT,
-  username: data.DATABASE_USERNAME,
-  password: data.DATABASE_PASSWORD,
-  database: data.DATABASE_NAME,
-  entities: [UsersEntity],
-
-  synchronize: true,
-
-  // Run migrations automatically,
-  // you can disable this if you prefer running migration manually.
-  migrationsRun: false,
-  logging: true,
-  logger: 'file',
-
-  seeds: [`${process.cwd()}/src/database/seeds/**/*{.ts,.js}`],
-  factories: [`${process.cwd()}/src/database/factories/**/*{.ts,.js}`],
-
-  migrations: [`${process.cwd()}/src/database/migrations/**/*{.ts,.js}`],
-  cli: {
-    migrationsDir: `src/database/migrations`,
-  },
-};
-
-export default config;
+export default bootstrap();
