@@ -53,5 +53,9 @@ module.exports = {
     'import/no-extraneous-dependencies': 'off',
     'unicorn/filename-case': 'off',
     'unicorn/prefer-node-protocol': 'off',
+    '@typescript-eslint/no-unsafe-call': 'off',
+    '@typescript-eslint/no-unsafe-assignment': 'off',
+    '@typescript-eslint/await-thenable': 'off',
+    'unicorn/no-null': 'off'
   },
 };

@@ -11,10 +11,7 @@ import { UsersEntity } from '../../../../models/users/entities/users.entity';
   imports: [
     TypeOrmModule.forRootAsync({
       imports: [PostgresConfigModule, AppConfigModule],
-      useFactory: (
-        postgresConfigService: PostgresConfigService,
-        appConfigService: AppConfigService,
-      ) =>
+      useFactory: (postgresConfigService: PostgresConfigService) =>
         ({
           type: 'postgres',
           host: postgresConfigService.host,
@@ -31,7 +28,7 @@ import { UsersEntity } from '../../../../models/users/entities/users.entity';
 
           seeds: [],
           factories: [],
-          dropSchema: true,
+          dropSchema: false,
           cli: {
             migrationsDir: 'src/database/migrations',
           },

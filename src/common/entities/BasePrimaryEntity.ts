@@ -1,7 +1,6 @@
 import {
   CreateDateColumn,
   DeleteDateColumn,
-  Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -13,9 +12,9 @@ export abstract class BasePrimaryEntity {
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @DeleteDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  deletedAt: Date;
+  @DeleteDateColumn({ type: 'timestamptz' })
+  deletedAt;
 
-  @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  updatedAt: Date;
+  @UpdateDateColumn()
+  updatedAt;
 }
