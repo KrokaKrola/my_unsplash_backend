@@ -20,7 +20,6 @@ import { join } from 'path';
         APP_ENV: Joi.string()
           .valid('development', 'production', 'test', 'stage')
           .default('development'),
-        APP_URL: Joi.string().default('http://my-app.test'),
         APP_PORT: Joi.number().default(9000),
       }),
     }),

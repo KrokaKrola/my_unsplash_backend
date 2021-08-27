@@ -3,7 +3,6 @@ import { TypeOrmModule, TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
 import { PostgresConfigModule } from '../configuration/configuration.module';
 import { PostgresConfigService } from '../configuration/configuration.service';
 import { ConnectionOptions } from 'typeorm';
-import { AppConfigService } from '../../../app/configuration.service';
 import { AppConfigModule } from '../../../app/configuration.module';
 import { UsersEntity } from '../../../../models/users/entities/users.entity';
 
@@ -25,15 +24,8 @@ import { UsersEntity } from '../../../../models/users/entities/users.entity';
           // logger: 'advanced-console',
           migrations: [`${process.cwd()}/src/database/migrations`],
           migrationsRun: false,
-
-          seeds: [],
-          factories: [],
-          dropSchema: false,
-          cli: {
-            migrationsDir: 'src/database/migrations',
-          },
         } as ConnectionOptions & { seeds?: string[]; factories?: string[] }),
-      inject: [PostgresConfigService, AppConfigService],
+      inject: [PostgresConfigService],
     } as TypeOrmModuleAsyncOptions),
   ],
 })

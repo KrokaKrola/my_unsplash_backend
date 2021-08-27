@@ -5,6 +5,7 @@ import { PostgresConfigModule } from './config/database/postgres/configuration/c
 import { RedisConfigModule } from './config/database/redis/configuration.module';
 import { ProviderModule as PostgresProvider } from './config/database/postgres/provider/provider.module';
 import { UsersModule } from './modules/users/users.module';
+import { ApiConfigurationModule } from './config/api/configuration.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UsersModule } from './modules/users/users.module';
     RedisConfigModule,
     PostgresProvider,
     UsersModule,
+    ApiConfigurationModule,
   ],
 })
 export class AppModule {}
