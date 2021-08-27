@@ -1,11 +1,17 @@
 import { BeforeInsert, Column, Entity } from 'typeorm';
 import { BasePrimaryEntity } from '../../../common/entities/BasePrimaryEntity';
 import { hash } from 'bcrypt';
+import { Exclude } from 'class-transformer';
 
 @Entity({
   name: 'users',
 })
 export class UsersEntity extends BasePrimaryEntity {
+  constructor(partial: Partial<UsersEntity>) {
+    super();
+    Object.assign(this, partial);
+  }
+
   @Column({
     type: 'varchar',
     length: 120,
@@ -40,7 +46,15 @@ export class UsersEntity extends BasePrimaryEntity {
     length: 60,
     nullable: false,
   })
+  @Exclude()
   password: string;
+
+  @Column({
+    type: 'boolean',
+    default: false,
+  })
+  @Exclude()
+  emailConfirmed: boolean;
 
   @BeforeInsert()
   async hashPassword() {

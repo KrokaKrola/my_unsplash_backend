@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { RegisterUserDto } from '../../models/users/dtos/registerUser.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersEntity } from '../../models/users/entities/users.entity';
@@ -12,22 +16,28 @@ export class UsersService {
   ) {}
 
   async register(registerUserDto: RegisterUserDto) {
+    const existedEmailUser = await this.usersRepository.findOne({
+      email: registerUserDto.email,
+    });
+
+    if (existedEmailUser) {
+      throw new ConflictException('User with this email already exists');
+    }
+
+    const existedUsernameUser = await this.usersRepository.findOne({
+      username: registerUserDto.username,
+    });
+
+    if (existedUsernameUser) {
+      throw new ConflictException('User with this username already exists');
+    }
+
     try {
-      const user = new UsersEntity();
+      const user = new UsersEntity(registerUserDto);
 
-      user.firstName = registerUserDto.firstName;
-      user.lastName = registerUserDto.lastName;
-      user.email = registerUserDto.email;
-      user.username = registerUserDto.username;
-      user.password = registerUserDto.password;
-
-      const result = await this.usersRepository.save(user);
-
-      console.log(result);
-
-      return result;
+      return await this.usersRepository.save(user);
     } catch (error) {
-      throw error;
+      throw new BadRequestException(error.message);
     }
   }
 }
