@@ -13,4 +13,8 @@ export class RedisConfigService {
   get port(): number {
     return this.configService.get<number>('redis.port');
   }
+
+  get host(): string {
+    return this.configService.get<string>('redis.host');
+  }
 }

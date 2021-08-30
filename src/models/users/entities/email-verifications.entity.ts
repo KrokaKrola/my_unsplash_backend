@@ -3,10 +3,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UsersEntity } from './users.entity';
+import { EmailsEntity } from '../../emails/entities/emails.entity';
 
 @Entity({
   name: 'email-verifications',
@@ -28,4 +31,8 @@ export class EmailVerificationEntity extends BaseEntity {
     onDelete: 'CASCADE',
   })
   user: UsersEntity;
+
+  @OneToOne(() => EmailsEntity)
+  @JoinColumn()
+  email: EmailsEntity;
 }

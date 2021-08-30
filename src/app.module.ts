@@ -7,6 +7,7 @@ import { ProviderModule as PostgresProvider } from './config/database/postgres/p
 import { UsersModule } from './modules/users/users.module';
 import { ApiConfigurationModule } from './config/api/configuration.module';
 import { MailerModule } from './modules/mailer/mailer.module';
+import { RedisProviderModule } from './config/database/redis/provider/provider.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { MailerModule } from './modules/mailer/mailer.module';
     PostgresProvider,
     UsersModule,
     ApiConfigurationModule,
+    RedisProviderModule,
     MailerModule,
   ],
 })

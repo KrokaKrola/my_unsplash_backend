@@ -56,6 +56,22 @@ export class UsersEntity extends BasePrimaryEntity {
   @Exclude()
   emailConfirmed: boolean;
 
+  @Column({
+    type: 'varchar',
+    length: 64,
+    nullable: true,
+  })
+  @Exclude()
+  facebookId?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 64,
+    nullable: true,
+  })
+  @Exclude()
+  googleId?: string;
+
   @BeforeInsert()
   private async hashPassword() {
     this.password = await argon2.hash(this.password);

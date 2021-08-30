@@ -18,16 +18,25 @@ services:
     volumes:
       - .:/usr/app
       - /usr/app/node_modules
+    networks:
+      app:
   database:
     image: postgres
     ports:
-      - "${DATABASE_PORT}:5432"
+      - "5435:${DATABASE_PORT}"
     environment:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
+    networks:
+      app:
   redis:
     image: redis
     restart: always
     ports:
       - "${REDIS_PORT}:6379"
+    networks:
+      app:
+
+networks:
+  app:
