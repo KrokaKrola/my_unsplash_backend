@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import configuration from './configuration';
 import { AppConfigService } from './configuration.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import path from 'path';
+import * as path from 'path';
 
 /**
  * Import and provide app configuration related classes.

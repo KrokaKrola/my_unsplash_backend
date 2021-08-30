@@ -11,7 +11,7 @@ import { UsersEntity } from '../../models/users/entities/users.entity';
 import { Repository } from 'typeorm';
 import { LoginUserDto } from 'src/models/users/dtos/loginUser.dto';
 import { ApiTokenEntity } from 'src/models/users/entities/api-tokens.entity';
-import { uuid } from 'uuidv4';
+import { generateToken } from 'src/common/utils/generateToken';
 
 @Injectable()
 export class UsersService {
@@ -45,7 +45,7 @@ export class UsersService {
       const apiTokenEntity = new ApiTokenEntity();
 
       apiTokenEntity.user = userEntity;
-      apiTokenEntity.token = uuid();
+      apiTokenEntity.token = await generateToken();
 
       await this.apiTokensRepository.save(apiTokenEntity);
 
@@ -78,7 +78,7 @@ export class UsersService {
 
     const apiTokenEntity = new ApiTokenEntity();
     apiTokenEntity.user = user;
-    apiTokenEntity.token = uuid();
+    apiTokenEntity.token = await generateToken();
 
     const apiToken = await this.apiTokensRepository.save(apiTokenEntity);
 
