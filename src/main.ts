@@ -16,15 +16,14 @@ async function bootstrap() {
   const documentBuilder = new DocumentBuilder()
     .setTitle('My Unsplash API')
     .addBearerAuth()
-    .addServer(apiConfig.baseUrl)
+    .addServer(`${apiConfig.baseUrl}/${apiConfig.version}/api`)
     .setVersion(apiConfig.version)
     .build();
 
   const document = SwaggerModule.createDocument(app, documentBuilder);
   SwaggerModule.setup(`${apiConfig.version}/docs`, app, document);
 
-
-  app.setGlobalPrefix(`api/${apiConfig.version}`);
+  app.setGlobalPrefix(`${apiConfig.version}/api`);
 
   await app.listen(appConfig.port);
 }

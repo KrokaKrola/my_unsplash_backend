@@ -1,7 +1,7 @@
 import { BeforeInsert, Column, Entity } from 'typeorm';
 import { BasePrimaryEntity } from '../../../common/entities/BasePrimaryEntity';
-import { hash } from 'bcrypt';
 import { Exclude } from 'class-transformer';
+import * as argon2 from 'argon2';
 
 @Entity({
   name: 'users',
@@ -14,7 +14,7 @@ export class UsersEntity extends BasePrimaryEntity {
 
   @Column({
     type: 'varchar',
-    length: 120,
+    length: 128,
     nullable: false,
   })
   firstName: string;
@@ -35,7 +35,7 @@ export class UsersEntity extends BasePrimaryEntity {
 
   @Column({
     type: 'varchar',
-    length: 60,
+    length: 64,
     nullable: false,
     unique: true,
   })
@@ -43,7 +43,7 @@ export class UsersEntity extends BasePrimaryEntity {
 
   @Column({
     type: 'varchar',
-    length: 60,
+    length: 128,
     nullable: false,
   })
   @Exclude()
@@ -57,7 +57,11 @@ export class UsersEntity extends BasePrimaryEntity {
   emailConfirmed: boolean;
 
   @BeforeInsert()
-  async hashPassword() {
-    this.password = await hash(this.password, 5);
+  private async hashPassword() {
+    this.password = await argon2.hash(this.password);
+  }
+
+  async verifyPassword(password: string) {
+    return await argon2.verify(this.password, password);
   }
 }

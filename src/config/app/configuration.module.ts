@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import configuration from './configuration';
 import { AppConfigService } from './configuration.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { join } from 'path';
+import path from 'path';
 
 /**
  * Import and provide app configuration related classes.
@@ -13,7 +13,7 @@ import { join } from 'path';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: join(process.cwd(), `.env.${process.env.APP_ENV}`),
+      envFilePath: path.join(process.cwd(), `.env.${process.env.APP_ENV}`),
       load: [configuration],
       validationSchema: Joi.object({
         APP_NAME: Joi.string().default('MyApp'),

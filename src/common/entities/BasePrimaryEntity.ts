@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   CreateDateColumn,
   DeleteDateColumn,
   PrimaryGeneratedColumn,
@@ -6,7 +7,7 @@ import {
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
-export abstract class BasePrimaryEntity {
+export abstract class BasePrimaryEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

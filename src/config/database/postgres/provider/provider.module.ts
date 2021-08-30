@@ -5,6 +5,7 @@ import { PostgresConfigService } from '../configuration/configuration.service';
 import { ConnectionOptions } from 'typeorm';
 import { AppConfigModule } from '../../../app/configuration.module';
 import { UsersEntity } from '../../../../models/users/entities/users.entity';
+import { ApiTokenEntity } from 'src/models/users/entities/api-tokens.entity';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { UsersEntity } from '../../../../models/users/entities/users.entity';
           username: postgresConfigService.username,
           password: postgresConfigService.password,
           database: postgresConfigService.name,
-          entities: [UsersEntity],
+          entities: [UsersEntity, ApiTokenEntity],
           logging: true,
         } as ConnectionOptions & { seeds?: string[]; factories?: string[] }),
       inject: [PostgresConfigService],

@@ -1,18 +1,25 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { RegisterUserDto } from '../../models/users/dtos/registerUser.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersEntity } from '../../models/users/entities/users.entity';
 import { Repository } from 'typeorm';
+import { LoginUserDto } from 'src/models/users/dtos/loginUser.dto';
+import { ApiTokenEntity } from 'src/models/users/entities/api-tokens.entity';
+import { uuid } from 'uuidv4';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UsersEntity)
     private usersRepository: Repository<UsersEntity>,
+    @InjectRepository(ApiTokenEntity)
+    private apiTokensRepository: Repository<ApiTokenEntity>,
   ) {}
 
   async register(registerUserDto: RegisterUserDto) {
@@ -33,11 +40,48 @@ export class UsersService {
     }
 
     try {
-      const user = new UsersEntity(registerUserDto);
+      const userEntity = new UsersEntity(registerUserDto);
 
-      return await this.usersRepository.save(user);
+      const apiTokenEntity = new ApiTokenEntity();
+
+      apiTokenEntity.user = userEntity;
+      apiTokenEntity.token = uuid();
+
+      await this.apiTokensRepository.save(apiTokenEntity);
+
+      const user = await this.usersRepository.save(userEntity);
+
+      return {
+        token: apiTokenEntity.token,
+        user,
+      };
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(error.message);
     }
+  }
+
+  async login(loginUserDto: LoginUserDto) {
+    const user = await this.usersRepository.findOne({
+      username: loginUserDto.username,
+    });
+
+    if (!user) {
+      throw new NotFoundException('User was not found');
+    }
+
+    const isPasswordCorrect = await user.verifyPassword(loginUserDto.password);
+
+    if (!isPasswordCorrect) {
+      throw new ForbiddenException('Given password is not correct');
+    }
+
+    const apiTokenEntity = new ApiTokenEntity();
+    apiTokenEntity.user = user;
+    apiTokenEntity.token = uuid();
+
+    const apiToken = await this.apiTokensRepository.save(apiTokenEntity);
+
+    return { token: apiToken.token, user };
   }
 }
