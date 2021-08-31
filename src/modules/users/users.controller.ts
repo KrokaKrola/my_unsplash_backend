@@ -17,17 +17,21 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { RegisterUserDto } from '../../models/users/dtos/registerUser.dto';
-import { UsersService } from './users.service';
 import { RequestValidationPipe } from '../../common/pipes/RequestValidationPipe.pipe';
 import { LoginUserDto } from 'src/models/users/dtos/loginUser.dto';
 import registerConflictResponseSwagger from 'src/modules/users/swagger/register/registerConflictResponse.swagger';
 import registerUnprocessableEntityResponseSwagger from 'src/modules/users/swagger/register/registerUnprocessableEntityResponse.swagger';
 import registerCreatedResponseSwagger from 'src/modules/users/swagger/register/registerCreatedResponse.swagger';
+import { UsersLoginService } from './services/users-login.service';
+import { UsersRegistrationService } from './services/users-registration.service';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersLoginService: UsersLoginService,
+    private usersRegistrationService: UsersRegistrationService,
+  ) {}
 
   @Post('/register')
   @ApiCreatedResponse(registerCreatedResponseSwagger)
@@ -36,14 +40,14 @@ export class UsersController {
   @UsePipes(RequestValidationPipe)
   @UseInterceptors(ClassSerializerInterceptor)
   async register(@Body() registerUserDto: RegisterUserDto) {
-    return this.usersService.register(registerUserDto);
+    return this.usersRegistrationService.register(registerUserDto);
   }
 
   @Post('/login')
   @UsePipes(RequestValidationPipe)
   @UseInterceptors(ClassSerializerInterceptor)
   login(@Body() loginUserDto: LoginUserDto) {
-    return this.usersService.login(loginUserDto);
+    return this.usersLoginService.login(loginUserDto);
   }
 
   @Post('/login/verify')

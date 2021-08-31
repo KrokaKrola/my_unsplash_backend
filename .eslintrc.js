@@ -57,6 +57,7 @@ module.exports = {
     '@typescript-eslint/no-unsafe-assignment': 'off',
     '@typescript-eslint/await-thenable': 'off',
     'unicorn/no-null': 'off',
-    'unicorn/import-style': 'off'
+    'unicorn/import-style': 'off',
+    '@typescript-eslint/no-misused-promises': 'off'
   },
 };

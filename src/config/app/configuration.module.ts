@@ -22,7 +22,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
     }),
   ],
-  providers: [ConfigService, AppConfigService],
-  exports: [ConfigService, AppConfigService],
+  providers: [AppConfigService],
+  exports: [AppConfigService],
 })
 export class AppConfigModule {}

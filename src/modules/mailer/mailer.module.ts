@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
 import { MailerService } from './mailer.service';
-import { BullModule } from '@nestjs/bull';
-import { MailerProcessor } from './mailer.processor';
+import { EmailsConfigurationModule } from 'src/config/emails/configuration.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { EmailsEntity } from 'src/models/emails/entities/emails.entity';
 
 @Module({
   imports: [
-    BullModule.registerQueue({
-      name: 'mailer',
-    }),
+    TypeOrmModule.forFeature([EmailsEntity]),
+    EmailsConfigurationModule,
   ],
-  providers: [MailerService, MailerProcessor],
-  exports: [MailerProcessor],
+  providers: [MailerService],
+  exports: [MailerService],
 })
 export class MailerModule {}

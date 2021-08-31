@@ -8,6 +8,7 @@ import { UsersModule } from './modules/users/users.module';
 import { ApiConfigurationModule } from './config/api/configuration.module';
 import { MailerModule } from './modules/mailer/mailer.module';
 import { RedisProviderModule } from './config/database/redis/provider/provider.module';
+import { EmailsConfigurationModule } from './config/emails/configuration.module';
 
 @Module({
   imports: [
@@ -15,11 +16,12 @@ import { RedisProviderModule } from './config/database/redis/provider/provider.m
     AppConfigModule,
     PostgresConfigModule,
     RedisConfigModule,
-    PostgresProvider,
-    UsersModule,
     ApiConfigurationModule,
+    EmailsConfigurationModule,
+    PostgresProvider,
     RedisProviderModule,
     MailerModule,
+    UsersModule,
   ],
 })
 export class AppModule {}
