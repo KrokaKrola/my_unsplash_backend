@@ -35,6 +35,16 @@ export class MailerService {
   }
 
   public async sendEmail(sendOptions: ISendMailOptions, emailId: number) {
+    /* 
+    TODO:
+    
+    1. add check if retries amount < 3, than its ok
+    2. if retries amount === 3 return and set error
+    3. on retry call sendEmail function with error object if it exists
+
+    Нужно сделать чтобы не блокировать поток мейлов для верификации
+    */
+
     const email = await this.emailsRepository.findOne(emailId);
 
     if (!email) {
@@ -50,9 +60,9 @@ export class MailerService {
     return new Promise((resolve, reject) => {
       retry(
         {
-          times: 3,
+          times: 2,
           interval: (retryCount) => {
-            return 500 * 2 ** retryCount;
+            return 500 * retryCount;
           },
         },
         (callback) => {

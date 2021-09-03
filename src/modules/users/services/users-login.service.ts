@@ -3,26 +3,21 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UsersEntity } from 'src/models/users/entities/users.entity';
-import { Repository } from 'typeorm';
 import { LoginUserDto } from 'src/models/users/dtos/loginUser.dto';
-import { ApiTokenEntity } from 'src/models/users/entities/api-tokens.entity';
-import { generateToken } from 'src/common/utils/generateToken';
+import { AuthService } from 'src/modules/auth/auth.service';
+import { UsersService } from './users.service';
 
 @Injectable()
 export class UsersLoginService {
   constructor(
-    @InjectRepository(UsersEntity)
-    private usersRepository: Repository<UsersEntity>,
-    @InjectRepository(ApiTokenEntity)
-    private apiTokensRepository: Repository<ApiTokenEntity>,
+    private authService: AuthService,
+    private usersService: UsersService,
   ) {}
 
   async login(loginUserDto: LoginUserDto) {
-    const user = await this.usersRepository.findOne({
-      username: loginUserDto.username,
-    });
+    const user = await this.usersService.findOneByUsername(
+      loginUserDto.username,
+    );
 
     if (!user) {
       throw new NotFoundException('User was not found');
@@ -34,12 +29,6 @@ export class UsersLoginService {
       throw new ForbiddenException('Given password is not correct');
     }
 
-    const apiTokenEntity = new ApiTokenEntity();
-    apiTokenEntity.user = user;
-    apiTokenEntity.token = await generateToken();
-
-    const apiToken = await this.apiTokensRepository.save(apiTokenEntity);
-
-    return { token: apiToken.token, user };
+    return { token: this.authService.signToken(user.id, user.email), user };
   }
 }

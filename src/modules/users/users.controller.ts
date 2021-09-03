@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
   UseInterceptors,
   UsePipes,
 } from '@nestjs/common';
@@ -24,6 +25,8 @@ import registerUnprocessableEntityResponseSwagger from 'src/modules/users/swagge
 import registerCreatedResponseSwagger from 'src/modules/users/swagger/register/registerCreatedResponse.swagger';
 import { UsersLoginService } from './services/users-login.service';
 import { UsersRegistrationService } from './services/users-registration.service';
+import { AuthGuard } from '@nestjs/passport';
+import { UserId } from 'src/common/decorators/user.decorator';
 
 @ApiTags('users')
 @Controller('users')
@@ -51,8 +54,11 @@ export class UsersController {
   }
 
   @Post('/login/verify')
-  loginVerify() {
-    return {};
+  @UseGuards(AuthGuard('jwt'))
+  loginVerify(@UserId() id: number) {
+    console.log(id);
+
+    return { id };
   }
 
   @Post('/login/social/:name')

@@ -10,9 +10,14 @@ export class EmailsEntity extends BasePrimaryEntity {
     enum: EmailsStatus,
     type: 'enum',
     default: EmailsStatus.PENDING,
-    nullable: true,
   })
-  status: EmailsStatus;
+  status?: EmailsStatus;
+
+  @Column({
+    type: 'bit',
+    default: 0,
+  })
+  retries?: number;
 
   @Column({
     type: 'json',

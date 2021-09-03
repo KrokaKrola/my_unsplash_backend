@@ -5,7 +5,6 @@ import { PostgresConfigService } from '../configuration/configuration.service';
 import { ConnectionOptions } from 'typeorm';
 import { AppConfigModule } from '../../../app/configuration.module';
 import { UsersEntity } from '../../../../models/users/entities/users.entity';
-import { ApiTokenEntity } from 'src/models/users/entities/api-tokens.entity';
 import { EmailVerificationEntity } from '../../../../models/users/entities/email-verifications.entity';
 import { EmailsEntity } from '../../../../models/emails/entities/emails.entity';
 
@@ -21,12 +20,7 @@ import { EmailsEntity } from '../../../../models/emails/entities/emails.entity';
           username: postgresConfigService.username,
           password: postgresConfigService.password,
           database: postgresConfigService.name,
-          entities: [
-            UsersEntity,
-            ApiTokenEntity,
-            EmailVerificationEntity,
-            EmailsEntity,
-          ],
+          entities: [UsersEntity, EmailVerificationEntity, EmailsEntity],
           logging: true,
         } as ConnectionOptions & { seeds?: string[]; factories?: string[] }),
       inject: [PostgresConfigService],
