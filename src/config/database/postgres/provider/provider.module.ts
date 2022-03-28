@@ -4,9 +4,10 @@ import { PostgresConfigModule } from '../configuration/configuration.module';
 import { PostgresConfigService } from '../configuration/configuration.service';
 import { ConnectionOptions } from 'typeorm';
 import { AppConfigModule } from '../../../app/configuration.module';
-import { UsersEntity } from '../../../../models/users/entities/users.entity';
+import { RegistrationCandidateEntity } from '../../../../models/users/entities/registration-candidate.entity';
 import { EmailVerificationEntity } from '../../../../models/users/entities/email-verifications.entity';
-import { EmailsEntity } from '../../../../models/emails/entities/emails.entity';
+import { MailEntity } from '../../../../models/emails/entities/mail.entity';
+import { UserEntity } from 'src/models/users/entities/user.entity';
 
 @Module({
   imports: [
@@ -20,7 +21,12 @@ import { EmailsEntity } from '../../../../models/emails/entities/emails.entity';
           username: postgresConfigService.username,
           password: postgresConfigService.password,
           database: postgresConfigService.name,
-          entities: [UsersEntity, EmailVerificationEntity, EmailsEntity],
+          entities: [
+            RegistrationCandidateEntity,
+            EmailVerificationEntity,
+            MailEntity,
+            UserEntity,
+          ],
           logging: true,
         } as ConnectionOptions & { seeds?: string[]; factories?: string[] }),
       inject: [PostgresConfigService],

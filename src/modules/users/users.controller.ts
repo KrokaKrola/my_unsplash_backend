@@ -7,7 +7,6 @@ import {
   Param,
   Patch,
   Post,
-  UseGuards,
   UseInterceptors,
   UsePipes,
 } from '@nestjs/common';
@@ -27,6 +26,7 @@ import { UsersLoginService } from './services/users-login.service';
 import { UsersRegistrationService } from './services/users-registration.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UserId } from 'src/common/decorators/user.decorator';
+import { RegisterEmailVerifyDto } from 'src/models/users/dtos/registerEmailVerify.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -46,19 +46,19 @@ export class UsersController {
     return this.usersRegistrationService.register(registerUserDto);
   }
 
+  @Post('/register/email/verify')
+  @UseInterceptors(ClassSerializerInterceptor)
+  registerEmailVerify(@Body() regiserEmailVerifyDto: RegisterEmailVerifyDto) {
+    return this.usersRegistrationService.registerEmailVerify(
+      regiserEmailVerifyDto,
+    );
+  }
+
   @Post('/login')
   @UsePipes(RequestValidationPipe)
   @UseInterceptors(ClassSerializerInterceptor)
   login(@Body() loginUserDto: LoginUserDto) {
     return this.usersLoginService.login(loginUserDto);
-  }
-
-  @Post('/login/verify')
-  @UseGuards(AuthGuard('jwt'))
-  loginVerify(@UserId() id: number) {
-    console.log(id);
-
-    return { id };
   }
 
   @Post('/login/social/:name')

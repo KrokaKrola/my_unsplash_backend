@@ -4,12 +4,10 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UsersEntity } from './users.entity';
-import { EmailsEntity } from '../../emails/entities/emails.entity';
+import { MailEntity } from '../../emails/entities/mail.entity';
 
 @Entity({
   name: 'email-verifications',
@@ -23,16 +21,16 @@ export class EmailVerificationEntity extends BaseEntity {
   })
   hash: string;
 
+  @Column({
+    type: 'varchar',
+    length: 6,
+  })
+  code: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => UsersEntity, (user) => user.id, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
-  user: UsersEntity;
-
-  @OneToOne(() => EmailsEntity)
+  @OneToOne(() => MailEntity)
   @JoinColumn()
-  email: EmailsEntity;
+  mail: MailEntity;
 }

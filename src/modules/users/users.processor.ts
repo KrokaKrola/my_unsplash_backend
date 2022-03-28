@@ -7,14 +7,14 @@ import { MailerService } from 'src/modules/mailer/mailer.service';
 export class UsersProcessor {
   constructor(private readonly mailerService: MailerService) {}
 
-  @Process('sendRegistrationEmail')
+  @Process('sendVerificationEmail')
   public async handleSend(job: Job<SendRegistrationEmailQueue>) {
     try {
       return await this.mailerService.sendEmail(
         {
           from: 'harlamsan@gmail.com',
           to: job.data.email,
-          html: job.data.hash,
+          html: job.data.code,
         },
         job.data.id,
       );

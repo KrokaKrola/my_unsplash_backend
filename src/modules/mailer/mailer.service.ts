@@ -6,9 +6,9 @@ import { ISendMailOptions } from '@nestjs-modules/mailer';
 import * as nodemailer from 'nodemailer';
 import { EmailsConfigurationService } from 'src/config/emails/configuration.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EmailsEntity } from 'src/models/emails/entities/emails.entity';
+import { MailEntity } from 'src/models/emails/entities/mail.entity';
 import { Repository } from 'typeorm';
-import { EmailsStatus } from 'src/models/emails/enums/email-status.enum';
+import { MailStatus as MailStatus } from 'src/models/emails/enums/mail-status';
 import { stringifyError } from 'src/common/utils/stringifyError';
 
 @Injectable()
@@ -19,8 +19,8 @@ export class MailerService {
 
   constructor(
     private readonly emailConfigService: EmailsConfigurationService,
-    @InjectRepository(EmailsEntity)
-    private emailsRepository: Repository<EmailsEntity>,
+    @InjectRepository(MailEntity)
+    private mailRepository: Repository<MailEntity>,
   ) {
     this.transporter = nodemailer.createTransport({
       host: emailConfigService.host,
@@ -34,55 +34,42 @@ export class MailerService {
     // this.transporter.use('compile', hbs(hbsEmailConfig));
   }
 
-  public async sendEmail(sendOptions: ISendMailOptions, emailId: number) {
-    /* 
-    TODO:
-    
-    1. add check if retries amount < 3, than its ok
-    2. if retries amount === 3 return and set error
-    3. on retry call sendEmail function with error object if it exists
+  public async sendEmail(sendOptions: ISendMailOptions, mailId: number) {
+    const mail = await this.mailRepository.findOne(mailId);
 
-    Нужно сделать чтобы не блокировать поток мейлов для верификации
-    */
-
-    const email = await this.emailsRepository.findOne(emailId);
-
-    if (!email) {
+    if (!mail) {
       throw new UnprocessableEntityException(
         'Cant find email with id: ',
-        `${emailId}`,
+        `${mailId}`,
       );
     }
 
-    email.status = EmailsStatus.PROCESSING;
-    await this.emailsRepository.save(email);
+    mail.status = MailStatus.PROCESSING;
+    await this.mailRepository.save(mail);
 
-    return new Promise((resolve, reject) => {
-      retry(
-        {
-          times: 2,
-          interval: (retryCount) => {
-            return 500 * retryCount;
-          },
+    retry(
+      {
+        times: 2,
+        interval: (retryCount) => {
+          return 500 * retryCount;
         },
-        (callback) => {
-          return this.sendWithRetry(callback, sendOptions);
-        },
-        async (error, result) => {
-          if (error) {
-            email.status = EmailsStatus.FAILED;
-            email.info = stringifyError(error, null, '\t');
-            await this.emailsRepository.save(email);
-            reject(error);
-          } else {
-            email.status = EmailsStatus.SENT;
-            email.info = JSON.stringify(result);
-            await this.emailsRepository.save(email);
-            resolve(result);
-          }
-        },
-      );
-    });
+      },
+      (callback) => {
+        return this.sendWithRetry(callback, sendOptions);
+      },
+      async (error, result) => {
+        console.log('error, result: ', error, result);
+        if (error) {
+          mail.status = MailStatus.FAILED;
+          mail.info = stringifyError(error, null, '\t');
+          await this.mailRepository.save(mail);
+        } else {
+          mail.status = MailStatus.SENT;
+          mail.info = JSON.stringify(result);
+          await this.mailRepository.save(mail);
+        }
+      },
+    );
   }
 
   private async sendWithRetry(
@@ -92,9 +79,11 @@ export class MailerService {
     return this.transporter
       .sendMail(sendOptions)
       .then((result) => {
+        console.log('result: ', result);
         return callback(null, result);
       })
       .catch((error) => {
+        console.log('error: ', error);
         this.logger.error(error);
         callback(error);
       });

@@ -1,4 +1,4 @@
-export enum EmailsStatus {
+export enum MailStatus {
   PENDING = 'pending',
   PROCESSING = 'processing',
   SENT = 'sent',

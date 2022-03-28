@@ -4,10 +4,10 @@ import { Exclude } from 'class-transformer';
 import * as argon2 from 'argon2';
 
 @Entity({
-  name: 'users',
+  name: 'registration-candidate',
 })
-export class UsersEntity extends BasePrimaryEntity {
-  constructor(partial: Partial<UsersEntity>) {
+export class RegistrationCandidateEntity extends BasePrimaryEntity {
+  constructor(partial: Partial<RegistrationCandidateEntity>) {
     super();
     Object.assign(this, partial);
   }
@@ -22,9 +22,8 @@ export class UsersEntity extends BasePrimaryEntity {
   @Column({
     type: 'varchar',
     length: 256,
-    nullable: true,
   })
-  lastName?: string;
+  lastName: string;
 
   @Column({
     type: 'varchar',
@@ -37,7 +36,6 @@ export class UsersEntity extends BasePrimaryEntity {
     type: 'varchar',
     length: 64,
     nullable: false,
-    unique: true,
   })
   username: string;
 
@@ -50,27 +48,9 @@ export class UsersEntity extends BasePrimaryEntity {
   password: string;
 
   @Column({
-    type: 'boolean',
-    default: false,
-  })
-  @Exclude()
-  emailConfirmed: boolean;
-
-  @Column({
     type: 'varchar',
-    length: 64,
-    nullable: true,
   })
-  @Exclude()
-  facebookId?: string;
-
-  @Column({
-    type: 'varchar',
-    length: 64,
-    nullable: true,
-  })
-  @Exclude()
-  googleId?: string;
+  hash: string;
 
   @BeforeInsert()
   private async hashPassword() {
