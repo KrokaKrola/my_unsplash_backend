@@ -7,7 +7,10 @@ import { UsersService } from 'src/modules/users/services/users.service';
 import { IJwtPayload } from '../interfaces/jwt-payload.interface';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtRefreshStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh-token',
+) {
   constructor(
     private readonly jwtConfigService: JwtConfigService,
     private readonly usersService: UsersService,
@@ -15,11 +18,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
-          return request?.cookies?.Authentication;
+          return request?.cookies?.Refresh;
         },
       ]),
       ignoreExpiration: false,
-      secretOrKey: jwtConfigService.accessTokenSecret,
+      secretOrKey: jwtConfigService.refreshTokenSecret,
     });
   }
 

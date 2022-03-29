@@ -27,7 +27,7 @@ import { UserEntity } from 'src/models/users/entities/user.entity';
             MailEntity,
             UserEntity,
           ],
-          logging: true,
+          logging: false,
         } as ConnectionOptions & { seeds?: string[]; factories?: string[] }),
       inject: [PostgresConfigService],
     } as TypeOrmModuleAsyncOptions),

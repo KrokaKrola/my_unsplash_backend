@@ -3,7 +3,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { LoginUserDto } from 'src/models/users/dtos/loginUser.dto';
+import { UserEntity } from 'src/models/users/entities/user.entity';
 import { AuthService } from 'src/modules/auth/auth.service';
 import { UsersService } from './users.service';
 
@@ -14,7 +16,10 @@ export class UsersLoginService {
     private usersService: UsersService,
   ) {}
 
-  async login(loginUserDto: LoginUserDto) {
+  async login(
+    response: Response,
+    loginUserDto: LoginUserDto,
+  ): Promise<UserEntity> {
     const user = await this.usersService.findOneByUsername(
       loginUserDto.username,
     );
@@ -29,6 +34,15 @@ export class UsersLoginService {
       throw new ForbiddenException('Given password is not correct');
     }
 
-    return { token: this.authService.signToken(user.id, user.email), user };
+    const refreshToken = this.authService.getCookieWithJwtRefreshToken({
+      id: user.id,
+    });
+    const accessToken = this.authService.getCookieWithJwtToken({ id: user.id });
+
+    response.setHeader('Set-Cookie', [accessToken, refreshToken.cookie]);
+
+    await this.usersService.setCurrentRefreshToken(refreshToken.token, user.id);
+
+    return user;
   }
 }

@@ -9,6 +9,7 @@ export class UsersProcessor {
 
   @Process('sendVerificationEmail')
   public async handleSend(job: Job<SendRegistrationEmailQueue>) {
+    console.log('job', job);
     try {
       return await this.mailerService.sendEmail(
         {

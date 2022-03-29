@@ -29,6 +29,7 @@ specifiers:
   bull: ^3.29.3
   class-transformer: ^0.4.0
   class-validator: ^0.13.2
+  cookie-parser: ^1.4.6
   date-fns: ^2.28.0
   dotenv: ^10.0.0
   eslint: ^7.32.0
@@ -77,6 +78,7 @@ dependencies:
   bull: 3.29.3
   class-transformer: 0.4.0
   class-validator: 0.13.2
+  cookie-parser: 1.4.6
   date-fns: 2.28.0
   joi: 17.6.0
   nest-winston: 1.6.2_77cd84ae63327f9dab1e3d2e87c43d1b
@@ -2617,8 +2619,21 @@ packages:
       safe-buffer: 5.1.2
     dev: true
 
+  /cookie-parser/1.4.6:
+    resolution: {integrity: sha512-z3IzaNjdwUC2olLIB5/ITd0/setiaFMLYiZJle7xg5Fe9KWAceil7xszYfHHBtDFYLSgJduS2Ty0P1uJdPDJeA==}
+    engines: {node: '>= 0.8.0'}
+    dependencies:
+      cookie: 0.4.1
+      cookie-signature: 1.0.6
+    dev: false
+
   /cookie-signature/1.0.6:
     resolution: {integrity: sha1-4wOogrNCzD7oylE6eZmXNNqzriw=}
+    dev: false
+
+  /cookie/0.4.1:
+    resolution: {integrity: sha512-ZwrFkGJxUR3EIoXtO+yVE69Eb7KlixbaeAWfBQB9vVsNn/o+Yw69gBWSSDK825hQNdN+wF8zELf3dFNl/kxkUA==}
+    engines: {node: '>= 0.6'}
     dev: false
 
   /cookie/0.4.2:

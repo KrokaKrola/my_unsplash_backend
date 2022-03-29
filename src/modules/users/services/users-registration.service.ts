@@ -22,6 +22,7 @@ import { MailStatus } from 'src/models/emails/enums/mail-status';
 import { differenceInSeconds } from 'date-fns';
 import { UserEntity } from 'src/models/users/entities/user.entity';
 import { AuthService } from 'src/modules/auth/auth.service';
+import { Response } from 'express';
 
 @Injectable()
 export class UsersRegistrationService {
@@ -44,6 +45,7 @@ export class UsersRegistrationService {
       registerUserDto.email,
     );
 
+    // check if user with passed email already registered
     if (existedEmailUser) {
       throw new ConflictException('Credentials are incorrect');
     }
@@ -52,6 +54,7 @@ export class UsersRegistrationService {
       registerUserDto.username,
     );
 
+    // check if user with passed username already registered
     if (existedUsernameUser) {
       throw new ConflictException('Credentials are incorrect');
     }
@@ -76,6 +79,7 @@ export class UsersRegistrationService {
         this.registrationCandidateRepository.save(registrationCandidate),
       ]);
 
+      // add sendEmail task to queue in mailer.service.ts
       await this.mailerQueue.add('sendVerificationEmail', {
         id: mail.id,
         hash: emailVerification.hash,
@@ -92,7 +96,11 @@ export class UsersRegistrationService {
     }
   }
 
-  async registerEmailVerify(registerEmailVerify: RegisterEmailVerifyDto) {
+  async registerEmailVerify(
+    response: Response,
+    registerEmailVerify: RegisterEmailVerifyDto,
+  ): Promise<UserEntity> {
+    console.log(registerEmailVerify);
     const verificationEmail = await this.emailVerificationRepository.findOne(
       {
         hash: registerEmailVerify.hash,
@@ -102,14 +110,18 @@ export class UsersRegistrationService {
       },
     );
 
+    // check if there is a verification email for given hash
+    // hash is given on register attempt
     if (!verificationEmail) {
       throw new NotFoundException('Verification code not found');
     }
 
+    // check if email successfuly sent to user email
     if (verificationEmail.mail.status !== MailStatus.SENT) {
       throw new BadRequestException('Email not sent, please try again');
     }
 
+    // check if code is correct
     if (verificationEmail.code !== registerEmailVerify.code) {
       throw new UnprocessableEntityException(
         'Verification code is not correct',
@@ -121,10 +133,12 @@ export class UsersRegistrationService {
         hash: registerEmailVerify.hash,
       });
 
+    // check if theres an registration candidate in DB
     if (!registrationCandidate) {
       throw new NotFoundException('User for registration is not not found');
     }
 
+    // check that lifetime is less then 60 seconds
     if (
       differenceInSeconds(new Date(), new Date(verificationEmail.createdAt)) >
       60
@@ -139,7 +153,7 @@ export class UsersRegistrationService {
       email: registrationCandidate.email,
       firstName: registrationCandidate.firstName,
       lastName: registrationCandidate.lastName,
-      username: registrationCandidate.email,
+      username: registrationCandidate.username,
       password: registrationCandidate.password,
     });
 
@@ -147,9 +161,15 @@ export class UsersRegistrationService {
     await registrationCandidate.remove();
     await verificationEmail.remove();
 
-    return {
-      token: this.authService.signToken(user.id, user.email),
-      user,
-    };
+    const refreshToken = this.authService.getCookieWithJwtRefreshToken({
+      id: user.id,
+    });
+    const accessToken = this.authService.getCookieWithJwtToken({ id: user.id });
+
+    await this.usersService.setCurrentRefreshToken(refreshToken.token, user.id);
+
+    response.setHeader('Set-Cookie', [accessToken, refreshToken.cookie]);
+
+    return user;
   }
 }

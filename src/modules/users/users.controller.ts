@@ -7,6 +7,9 @@ import {
   Param,
   Patch,
   Post,
+  Req,
+  Res,
+  UseGuards,
   UseInterceptors,
   UsePipes,
 } from '@nestjs/common';
@@ -24,9 +27,12 @@ import registerUnprocessableEntityResponseSwagger from 'src/modules/users/swagge
 import registerCreatedResponseSwagger from 'src/modules/users/swagger/register/registerCreatedResponse.swagger';
 import { UsersLoginService } from './services/users-login.service';
 import { UsersRegistrationService } from './services/users-registration.service';
-import { AuthGuard } from '@nestjs/passport';
 import { UserId } from 'src/common/decorators/user.decorator';
 import { RegisterEmailVerifyDto } from 'src/models/users/dtos/registerEmailVerify.dto';
+import { Request, Response } from 'express';
+import JwtAuthenticationGuard from '../auth/guards/jwt.guard';
+import { UsersService } from './services/users.service';
+import JwtRefreshTokenGuard from '../auth/guards/jwt-refresh.guard';
 
 @ApiTags('users')
 @Controller('users')
@@ -34,6 +40,7 @@ export class UsersController {
   constructor(
     private usersLoginService: UsersLoginService,
     private usersRegistrationService: UsersRegistrationService,
+    private usersService: UsersService,
   ) {}
 
   @Post('/register')
@@ -47,9 +54,14 @@ export class UsersController {
   }
 
   @Post('/register/email/verify')
+  @UsePipes(RequestValidationPipe)
   @UseInterceptors(ClassSerializerInterceptor)
-  registerEmailVerify(@Body() regiserEmailVerifyDto: RegisterEmailVerifyDto) {
+  registerEmailVerify(
+    @Res({ passthrough: true }) response: Response,
+    @Body() regiserEmailVerifyDto: RegisterEmailVerifyDto,
+  ) {
     return this.usersRegistrationService.registerEmailVerify(
+      response,
       regiserEmailVerifyDto,
     );
   }
@@ -57,8 +69,21 @@ export class UsersController {
   @Post('/login')
   @UsePipes(RequestValidationPipe)
   @UseInterceptors(ClassSerializerInterceptor)
-  login(@Body() loginUserDto: LoginUserDto) {
-    return this.usersLoginService.login(loginUserDto);
+  login(
+    @Res({ passthrough: true }) response: Response,
+    @Body() loginUserDto: LoginUserDto,
+  ) {
+    return this.usersLoginService.login(response, loginUserDto);
+  }
+
+  @Post('/token/update')
+  @UseGuards(JwtRefreshTokenGuard)
+  refreshAccessToken(
+    @Res({ passthrough: true }) response: Response,
+    @Req() request: Request,
+    @UserId() userId: number,
+  ) {
+    return this.usersService.refreshAccessToken(response, request, userId);
   }
 
   @Post('/login/social/:name')
@@ -67,21 +92,28 @@ export class UsersController {
   }
 
   @Post('/logout')
-  logout() {
-    return {};
+  @UseGuards(JwtAuthenticationGuard)
+  logout(
+    @Res({ passthrough: true }) response: Response,
+    @UserId() userId: number,
+  ) {
+    return this.usersService.logout(response, userId);
   }
 
   @Get('/me')
-  getUser() {
-    return {};
+  @UseGuards(JwtAuthenticationGuard)
+  getUser(@UserId() id: number) {
+    return { id };
   }
 
   @Patch('/me')
+  @UseGuards(JwtAuthenticationGuard)
   updateUser() {
     return {};
   }
 
   @Delete('/me')
+  @UseGuards(JwtAuthenticationGuard)
   deleteUser() {
     return {};
   }

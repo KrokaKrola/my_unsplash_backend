@@ -49,6 +49,16 @@ export class UserEntity extends BasePrimaryEntity {
   @Exclude()
   password: string;
 
+  @Column({
+    nullable: true,
+  })
+  @Exclude()
+  public currentHashedRefreshToken?: string;
+
+  async verifyRefreshToken(refreshToken: string) {
+    return await argon2.verify(this.currentHashedRefreshToken, refreshToken);
+  }
+
   async verifyPassword(password: string) {
     return await argon2.verify(this.password, password);
   }

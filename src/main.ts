@@ -4,11 +4,13 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppConfigService } from './config/app/configuration.service';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ApiConfigService } from './config/api/configuration.service';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.use(cookieParser());
 
   const appConfig: AppConfigService = app.get(AppConfigService);
   const apiConfig: ApiConfigService = app.get(ApiConfigService);
