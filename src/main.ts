@@ -17,7 +17,7 @@ async function bootstrap() {
 
   const documentBuilder = new DocumentBuilder()
     .setTitle('My Unsplash API')
-    .addBearerAuth()
+    .addCookieAuth('Authentication')
     .addServer(`${apiConfig.baseUrl}/${apiConfig.version}/api`)
     .setVersion(apiConfig.version)
     .build();

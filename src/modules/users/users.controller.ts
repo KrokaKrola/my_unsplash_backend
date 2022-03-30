@@ -14,6 +14,7 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiTags,
@@ -33,6 +34,9 @@ import { Request, Response } from 'express';
 import JwtAuthenticationGuard from '../auth/guards/jwt.guard';
 import { UsersService } from './services/users.service';
 import JwtRefreshTokenGuard from '../auth/guards/jwt-refresh.guard';
+import registerBadRequestResponseSwagger from './swagger/register/registerBadRequestResponse.swagger';
+import { UserEntity } from 'src/models/users/entities/user.entity';
+import registerEmailVerifyCreatedResponseSwagger from './swagger/register-email-verify/registerEmailVerifyCreatedResponse.swagger';
 
 @ApiTags('users')
 @Controller('users')
@@ -47,6 +51,7 @@ export class UsersController {
   @ApiCreatedResponse(registerCreatedResponseSwagger)
   @ApiUnprocessableEntityResponse(registerUnprocessableEntityResponseSwagger)
   @ApiConflictResponse(registerConflictResponseSwagger)
+  @ApiBadRequestResponse(registerBadRequestResponseSwagger)
   @UsePipes(RequestValidationPipe)
   @UseInterceptors(ClassSerializerInterceptor)
   async register(@Body() registerUserDto: RegisterUserDto) {
@@ -56,10 +61,11 @@ export class UsersController {
   @Post('/register/email/verify')
   @UsePipes(RequestValidationPipe)
   @UseInterceptors(ClassSerializerInterceptor)
+  @ApiCreatedResponse(registerEmailVerifyCreatedResponseSwagger)
   registerEmailVerify(
     @Res({ passthrough: true }) response: Response,
     @Body() regiserEmailVerifyDto: RegisterEmailVerifyDto,
-  ) {
+  ): Promise<UserEntity> {
     return this.usersRegistrationService.registerEmailVerify(
       response,
       regiserEmailVerifyDto,

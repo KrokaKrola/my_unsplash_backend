@@ -1,13 +1,11 @@
-import { ApiResponseOptions } from "@nestjs/swagger";
+import { ApiResponseOptions } from '@nestjs/swagger';
 
 export default {
+  description:
+    'Return hash value, that is used in /users/register/email/verify',
   schema: {
     example: {
-      "id": 2,
-      "firstName": "fdsfsdfsdsdf",
-      "lastName": "dsfsdfsdf",
-      "email": "test@mail.rufsdfds",
-      "username": "my_nick_name12345562"
-    }
-  }
+      hash: 'random_string',
+    },
+  },
 } as ApiResponseOptions;
