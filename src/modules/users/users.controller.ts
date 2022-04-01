@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -13,32 +14,19 @@ import {
   UseInterceptors,
   UsePipes,
 } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiConflictResponse,
-  ApiCreatedResponse,
-  ApiTags,
-  ApiUnprocessableEntityResponse,
-} from '@nestjs/swagger';
-import { RegisterUserDto } from '../../models/users/dtos/registerUser.dto';
 import { RequestValidationPipe } from '../../common/pipes/RequestValidationPipe.pipe';
-import { LoginUserDto } from 'src/models/users/dtos/loginUser.dto';
-import registerConflictResponseSwagger from 'src/modules/users/swagger/register/registerConflictResponse.swagger';
-import registerUnprocessableEntityResponseSwagger from 'src/modules/users/swagger/register/registerUnprocessableEntityResponse.swagger';
-import registerCreatedResponseSwagger from 'src/modules/users/swagger/register/registerCreatedResponse.swagger';
 import { UsersLoginService } from './services/users-login.service';
 import { UsersRegistrationService } from './services/users-registration.service';
 import { UserId } from 'src/common/decorators/user.decorator';
-import { RegisterEmailVerifyDto } from 'src/models/users/dtos/registerEmailVerify.dto';
 import { Request, Response } from 'express';
 import JwtAuthenticationGuard from '../auth/guards/jwt.guard';
 import { UsersService } from './services/users.service';
 import JwtRefreshTokenGuard from '../auth/guards/jwt-refresh.guard';
-import registerBadRequestResponseSwagger from './swagger/register/registerBadRequestResponse.swagger';
 import { UserEntity } from 'src/models/users/entities/user.entity';
-import registerEmailVerifyCreatedResponseSwagger from './swagger/register-email-verify/registerEmailVerifyCreatedResponse.swagger';
+import { RegisterUserDto } from './dtos/registerUser.dto';
+import { RegisterEmailVerifyDto } from './dtos/registerEmailVerify.dto';
+import { LoginUserDto } from './dtos/loginUser.dto';
 
-@ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(
@@ -48,10 +36,6 @@ export class UsersController {
   ) {}
 
   @Post('/register')
-  @ApiCreatedResponse(registerCreatedResponseSwagger)
-  @ApiUnprocessableEntityResponse(registerUnprocessableEntityResponseSwagger)
-  @ApiConflictResponse(registerConflictResponseSwagger)
-  @ApiBadRequestResponse(registerBadRequestResponseSwagger)
   @UsePipes(RequestValidationPipe)
   @UseInterceptors(ClassSerializerInterceptor)
   async register(@Body() registerUserDto: RegisterUserDto) {
@@ -61,20 +45,20 @@ export class UsersController {
   @Post('/register/email/verify')
   @UsePipes(RequestValidationPipe)
   @UseInterceptors(ClassSerializerInterceptor)
-  @ApiCreatedResponse(registerEmailVerifyCreatedResponseSwagger)
   registerEmailVerify(
     @Res({ passthrough: true }) response: Response,
-    @Body() regiserEmailVerifyDto: RegisterEmailVerifyDto,
+    @Body() registerEmailVerifyDto: RegisterEmailVerifyDto,
   ): Promise<UserEntity> {
     return this.usersRegistrationService.registerEmailVerify(
       response,
-      regiserEmailVerifyDto,
+      registerEmailVerifyDto,
     );
   }
 
   @Post('/login')
   @UsePipes(RequestValidationPipe)
   @UseInterceptors(ClassSerializerInterceptor)
+  @HttpCode(200)
   login(
     @Res({ passthrough: true }) response: Response,
     @Body() loginUserDto: LoginUserDto,
@@ -84,6 +68,7 @@ export class UsersController {
 
   @Post('/token/update')
   @UseGuards(JwtRefreshTokenGuard)
+  @HttpCode(204)
   refreshAccessToken(
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,

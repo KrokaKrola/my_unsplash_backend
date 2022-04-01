@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { LoginUserDto } from 'src/models/users/dtos/loginUser.dto';
+import { LoginUserDto } from 'src/modules/users/dtos/loginUser.dto';
 import { UserEntity } from 'src/models/users/entities/user.entity';
 import { AuthService } from 'src/modules/auth/auth.service';
 import { UsersService } from './users.service';

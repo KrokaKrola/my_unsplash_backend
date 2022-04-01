@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { RegisterUserDto } from 'src/models/users/dtos/registerUser.dto';
+import { RegisterUserDto } from 'src/modules/users/dtos/registerUser.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RegistrationCandidateEntity } from 'src/models/users/entities/registration-candidate.entity';
 import { Repository } from 'typeorm';
@@ -17,7 +17,7 @@ import { Queue } from 'bull';
 import { SendRegistrationEmailQueue } from '../interfaces/SendRegistrationEmailQueue.interface';
 import { UsersService } from './users.service';
 import { generateFixedLengthInteger } from 'src/common/utils/generateFixedLengthInteger';
-import { RegisterEmailVerifyDto } from 'src/models/users/dtos/registerEmailVerify.dto';
+import { RegisterEmailVerifyDto } from 'src/modules/users/dtos/registerEmailVerify.dto';
 import { MailStatus } from 'src/models/emails/enums/mail-status';
 import { differenceInSeconds } from 'date-fns';
 import { UserEntity } from 'src/models/users/entities/user.entity';
@@ -123,9 +123,12 @@ export class UsersRegistrationService {
 
     // check if code is correct
     if (verificationEmail.code !== registerEmailVerify.code) {
-      throw new UnprocessableEntityException(
-        'Verification code is not correct',
-      );
+      throw new UnprocessableEntityException([
+        {
+          property: 'code',
+          constraints: { notValid: 'Verification code is not correct' },
+        },
+      ]);
     }
 
     const registrationCandidate =
@@ -144,9 +147,12 @@ export class UsersRegistrationService {
       60
     ) {
       await verificationEmail.remove();
-      throw new UnprocessableEntityException(
-        'Verification code is no longer valid',
-      );
+      throw new UnprocessableEntityException([
+        {
+          property: 'code',
+          constraints: { notValid: 'Verification code is no longer valid' },
+        },
+      ]);
     }
 
     const user = new UserEntity({

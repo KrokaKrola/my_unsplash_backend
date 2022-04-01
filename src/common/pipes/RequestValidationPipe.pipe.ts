@@ -11,7 +11,8 @@ const RequestValidationPipe = new ValidationPipe({
   exceptionFactory: (errors) => {
     return new UnprocessableEntityException(
       errors.map((error) => ({
-        [error.property]: error.constraints,
+        property: error.property,
+        constraints: error.constraints,
       })),
     );
   },
