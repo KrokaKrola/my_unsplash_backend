@@ -638,6 +638,119 @@ const swaggerDescription = {
           },
         },
       },
+      patch: {
+        tags: ['pets'],
+        description: 'Update pet by id',
+        security: [{ AccessToken: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            type: 'number',
+            description: 'ID of the pet. Must be positive integer',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                $ref: '#/components/schemas/PatchPetDto',
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Return updated pet object',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/PetObject',
+                },
+              },
+            },
+          },
+          401: {
+            description: 'Authorization error',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnauthorizedException',
+                },
+              },
+            },
+          },
+          404: {
+            description: 'Pet is not found for given ID',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/NotFoundException',
+                },
+              },
+            },
+          },
+          422: {
+            description: 'Validation errors',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnprocessableEntityException',
+                },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        tags: ['pets'],
+        description: 'Update pet by id',
+        security: [{ AccessToken: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            type: 'number',
+            description: 'ID of the pet. Must be positive integer',
+          },
+        ],
+        responses: {
+          204: {
+            description: 'Successfully deleted pet by id',
+          },
+          401: {
+            description: 'Authorization error',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnauthorizedException',
+                },
+              },
+            },
+          },
+          404: {
+            description: 'Pet is not found for given ID',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/NotFoundException',
+                },
+              },
+            },
+          },
+          422: {
+            description: 'Validation errors',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnprocessableEntityException',
+                },
+              },
+            },
+          },
+        },
+      },
     },
   },
   components: {
@@ -917,6 +1030,36 @@ const swaggerDescription = {
             type: 'string',
             format: 'binary',
             required: true,
+            description:
+              'Required field. Avatar of your pet. Minimum dimension 500x500. Maximum size is 5MB',
+          },
+        },
+      },
+      PatchPetDto: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            example: 'Jacky',
+            minLength: 2,
+            maxLength: 128,
+            description: 'Required field. Name of your pet',
+          },
+          bio: {
+            type: 'string',
+            maxLength: 500,
+            example: 'The best dog in the W O R L D!',
+            description: 'Not required field. Biography of your pet',
+          },
+          typeId: {
+            type: 'number',
+            example: 1,
+            description:
+              'Not required field. Type of pet. You can get this id from GET /pets/types',
+          },
+          image: {
+            type: 'string',
+            format: 'binary',
             description:
               'Required field. Avatar of your pet. Minimum dimension 500x500. Maximum size is 5MB',
           },
