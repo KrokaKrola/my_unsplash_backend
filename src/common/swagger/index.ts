@@ -424,7 +424,7 @@ const swaggerDescription = {
     },
   },
   info: {
-    title: 'My Unsplash API',
+    title: 'Pawsplash API',
     description: '',
     version: 'v1.0',
     contact: {},

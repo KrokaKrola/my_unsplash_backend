@@ -6,7 +6,6 @@ import { ApiConfigService } from './config/api/configuration.service';
 import * as cookieParser from 'cookie-parser';
 import * as swaggerUi from 'swagger-ui-express';
 import swaggerDescription from 'src/common/swagger';
-import { generateToken } from './common/utils/generateToken';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

@@ -1,10 +1,10 @@
 {
-  "name": "my-unsplash",
-  "version": "0.0.1",
+  "name": "pawsplash_backend",
+  "version": "1.0.0",
   "description": "",
   "author": "krokakrola",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
@@ -21,8 +21,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "docker": "docker-compose --env-file ./.env.development up",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config src/config/database/postgres/ormconfig.ts",
-    "typeorm:migrate": "npm run typeorm migration:generate -- -n",
-    "typeorm:migrate:run": "npm run typeorm migration:run",
+    "migration:generate": "npm run typeorm migration:generate -- -n",
+    "migration:run": "npm run typeorm migration:run",
     "schema:sync": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config src/config/database/postgres/ormconfig.ts schema:sync",
     "schema:drop": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config src/config/database/postgres/ormconfig.ts schema:drop"
   },

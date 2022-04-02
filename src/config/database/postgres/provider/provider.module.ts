@@ -8,6 +8,11 @@ import { RegistrationCandidateEntity } from '../../../../models/users/entities/r
 import { EmailVerificationEntity } from '../../../../models/users/entities/email-verifications.entity';
 import { MailEntity } from '../../../../models/emails/entities/mail.entity';
 import { UserEntity } from 'src/models/users/entities/user.entity';
+import { CategoryEntity } from 'src/models/categories/entities/category.entity';
+import { PetTypeEntity } from 'src/models/pet-types/entities/pet-type.entity';
+import { ImageEntity } from 'src/models/image/entities/image.entity';
+import { PetEntity } from 'src/models/pets/entities/pet.entity';
+import { PostEntity } from 'src/models/posts/entities/post.entity';
 
 @Module({
   imports: [
@@ -26,6 +31,11 @@ import { UserEntity } from 'src/models/users/entities/user.entity';
             EmailVerificationEntity,
             MailEntity,
             UserEntity,
+            CategoryEntity,
+            PetTypeEntity,
+            ImageEntity,
+            PetEntity,
+            PostEntity,
           ],
           logging: false,
         } as ConnectionOptions & { seeds?: string[]; factories?: string[] }),
