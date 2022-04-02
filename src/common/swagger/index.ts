@@ -1,5 +1,17 @@
 const swaggerDescription = {
   openapi: '3.0.0',
+  info: {
+    title: 'Pawsplash API',
+    description: '',
+    version: 'v1.0',
+    contact: {},
+  },
+  tags: [],
+  servers: [
+    {
+      url: 'http://localhost:3000/v1.0/api',
+    },
+  ],
   paths: {
     '/users/register': {
       post: {
@@ -399,7 +411,7 @@ const swaggerDescription = {
         description: 'Get user object. Authentication cookie is required',
         responses: {
           '200': {
-            description: '',
+            description: 'Return user object',
             content: {
               'application/json': {
                 schema: {
@@ -422,19 +434,325 @@ const swaggerDescription = {
         tags: ['users'],
       },
     },
-  },
-  info: {
-    title: 'Pawsplash API',
-    description: '',
-    version: 'v1.0',
-    contact: {},
-  },
-  tags: [],
-  servers: [
-    {
-      url: 'http://localhost:3000/v1.0/api',
+    '/pets': {
+      post: {
+        tags: ['pets'],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                $ref: '#/components/schemas/CreatePetDto',
+              },
+            },
+          },
+        },
+        security: [{ AccessToken: [] }],
+        description: 'Create new pet',
+        responses: {
+          '201': {
+            description: 'Create pet and return it',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/PetObject',
+                },
+              },
+            },
+          },
+          401: {
+            description: 'Authorization error',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnauthorizedException',
+                },
+              },
+            },
+          },
+          '422': {
+            description: 'Validation errors',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnprocessableEntityException',
+                },
+                examples: {
+                  'Default validation errors': {
+                    value: {
+                      code: 422,
+                      message: [
+                        {
+                          property: 'name',
+                          constraints: {
+                            name: 'name should not be empty',
+                          },
+                        },
+                      ],
+                      error: 'Unprocessable entity',
+                    },
+                  },
+                  'Type ID validation error': {
+                    value: {
+                      code: 422,
+                      message: [
+                        {
+                          property: 'typeId',
+                          constraints: {
+                            typeId: 'typeId not found in database',
+                          },
+                        },
+                      ],
+                      error: 'Unprocessable entity',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      get: {
+        tags: ['pets'],
+        description: 'Get all pets of requested user. Response is paginated',
+        security: [{ AccessToken: [] }],
+        parameters: [
+          {
+            in: 'query',
+            name: 'page',
+            description: 'Page number of requested items',
+            schema: {
+              $ref: '#/components/schemas/PaginationPageQueryParam',
+            },
+          },
+          {
+            in: 'query',
+            name: 'limit',
+            description: 'Limit return number of elements',
+            schema: {
+              $ref: '#/components/schemas/PaginationLimitQueryParam',
+            },
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Paginated pets response',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    items: {
+                      type: 'array',
+                      items: {
+                        $ref: '#/components/schemas/PetObject',
+                      },
+                    },
+                    links: {
+                      $ref: '#/components/schemas/PaginationResponseLinks',
+                    },
+                    meta: {
+                      $ref: '#/components/schemas/PaginationResponseMeta',
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: 'Authorization error',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnauthorizedException',
+                },
+              },
+            },
+          },
+          422: {
+            description: 'Error for passed query params',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnprocessableEntityException',
+                },
+              },
+            },
+          },
+        },
+      },
     },
-  ],
+    '/pets/{id}': {
+      get: {
+        tags: ['pets'],
+        description: 'Get info of the pet by id',
+        security: [{ AccessToken: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            type: 'number',
+            description: 'ID of the pet. Must be positive integer',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Get pet object',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/PetObject',
+                },
+              },
+            },
+          },
+          401: {
+            description: 'Authorization error',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnauthorizedException',
+                },
+              },
+            },
+          },
+          404: {
+            description: 'Pet is not found for given ID',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/NotFoundException',
+                },
+              },
+            },
+          },
+          422: {
+            description: 'Passed ID parameter is not valid',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnprocessableEntityException',
+                },
+              },
+            },
+          },
+        },
+      },
+      patch: {
+        tags: ['pets'],
+        description: 'Update pet by id',
+        security: [{ AccessToken: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            type: 'number',
+            description: 'ID of the pet. Must be positive integer',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                $ref: '#/components/schemas/PatchPetDto',
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Return updated pet object',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/PetObject',
+                },
+              },
+            },
+          },
+          401: {
+            description: 'Authorization error',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnauthorizedException',
+                },
+              },
+            },
+          },
+          404: {
+            description: 'Pet is not found for given ID',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/NotFoundException',
+                },
+              },
+            },
+          },
+          422: {
+            description: 'Validation errors',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnprocessableEntityException',
+                },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        tags: ['pets'],
+        description: 'Update pet by id',
+        security: [{ AccessToken: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            type: 'number',
+            description: 'ID of the pet. Must be positive integer',
+          },
+        ],
+        responses: {
+          204: {
+            description: 'Successfully deleted pet by id',
+          },
+          401: {
+            description: 'Authorization error',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnauthorizedException',
+                },
+              },
+            },
+          },
+          404: {
+            description: 'Pet is not found for given ID',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/NotFoundException',
+                },
+              },
+            },
+          },
+          422: {
+            description: 'Validation errors',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UnprocessableEntityException',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   components: {
     securitySchemes: {
       AccessToken: {
@@ -534,7 +852,7 @@ const swaggerDescription = {
           },
           message: {
             type: 'string',
-            example: 'Passed code was not found',
+            example: 'Not found exception error',
           },
           error: {
             type: 'string',
@@ -584,7 +902,7 @@ const swaggerDescription = {
           },
           message: {
             type: 'string',
-            example: 'Given password is not correct',
+            example: 'Forbidden exception error',
           },
           error: {
             type: 'string',
@@ -627,7 +945,7 @@ const swaggerDescription = {
                   type: 'string',
                   description: 'Property that produces error',
                   required: true,
-                  example: 'firstName',
+                  example: 'propertyName',
                 },
                 constraints: {
                   type: 'object',
@@ -637,7 +955,7 @@ const swaggerDescription = {
                     key: {
                       type: 'string',
                       description: 'Error type',
-                      example: 'firstName should not be empty',
+                      example: 'key should not be empty',
                     },
                   },
                 },
@@ -654,6 +972,11 @@ const swaggerDescription = {
       UserObject: {
         type: 'object',
         properties: {
+          id: {
+            type: 'number',
+            example: 1,
+            required: true,
+          },
           firstName: {
             type: 'string',
             example: 'Jack',
@@ -679,6 +1002,193 @@ const swaggerDescription = {
           },
         },
         required: ['firstName', 'lastName', 'email', 'username', 'password'],
+      },
+      CreatePetDto: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            example: 'Jacky',
+            required: true,
+            minLength: 2,
+            maxLength: 128,
+            description: 'Required field. Name of your pet',
+          },
+          bio: {
+            type: 'string',
+            maxLength: 500,
+            example: 'The best dog in the W O R L D!',
+            description: 'Not required field. Biography of your pet',
+          },
+          typeId: {
+            type: 'number',
+            example: 1,
+            description:
+              'Not required field. Type of pet. You can get this id from GET /pets/types',
+          },
+          image: {
+            type: 'string',
+            format: 'binary',
+            required: true,
+            description:
+              'Required field. Avatar of your pet. Minimum dimension 500x500. Maximum size is 5MB',
+          },
+        },
+      },
+      PatchPetDto: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            example: 'Jacky',
+            minLength: 2,
+            maxLength: 128,
+            description: 'Required field. Name of your pet',
+          },
+          bio: {
+            type: 'string',
+            maxLength: 500,
+            example: 'The best dog in the W O R L D!',
+            description: 'Not required field. Biography of your pet',
+          },
+          typeId: {
+            type: 'number',
+            example: 1,
+            description:
+              'Not required field. Type of pet. You can get this id from GET /pets/types',
+          },
+          image: {
+            type: 'string',
+            format: 'binary',
+            description:
+              'Required field. Avatar of your pet. Minimum dimension 500x500. Maximum size is 5MB',
+          },
+        },
+      },
+      PetObject: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'number',
+            example: 1,
+            required: true,
+          },
+          name: {
+            type: 'string',
+            example: 'Jacky',
+            required: true,
+            maxLength: 128,
+            minLength: 2,
+          },
+          bio: {
+            type: 'string',
+            maxLength: 500,
+            example: 'The best dog in the W O R L D!',
+          },
+          petType: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'number',
+                example: 1,
+                required: true,
+              },
+              name: {
+                type: 'string',
+                example: 'Dog',
+                required: true,
+              },
+            },
+          },
+          image: {
+            type: 'object',
+            required: true,
+            properties: {
+              hash: {
+                type: 'string',
+                description: 'Hash of uploaded image',
+                example:
+                  'eab39a72f43d2c84160cf58659c78e646725b0c28fb9c6f8e359462888950e14',
+              },
+            },
+          },
+        },
+      },
+      PaginationPageQueryParam: {
+        type: 'number',
+        minimum: 1,
+        example: 1,
+        default: 1,
+      },
+      PaginationLimitQueryParam: {
+        type: 'number',
+        minimum: 1,
+        maximum: 100,
+        example: 6,
+        default: 6,
+      },
+      PaginationResponseMeta: {
+        type: 'object',
+        properties: {
+          itemCount: {
+            type: 'number',
+            example: 20,
+            description:
+              'The length of items array (i.e., the amount of items on this page)',
+          },
+          totalItems: {
+            type: 'number',
+            example: 20,
+            description:
+              'The total amount of SomeEntity matching the filter conditions',
+          },
+          itemsPerPage: {
+            type: 'number',
+            example: 10,
+            description:
+              'The requested items per page (i.e., the limit parameter)',
+          },
+          totalPages: {
+            type: 'number',
+            example: 5,
+            description: 'The total amount of pages (based on the limit)',
+          },
+          currentPage: {
+            type: 'number',
+            example: 2,
+            description:
+              'The current page this paginator "points" to links.first',
+          },
+        },
+      },
+      PaginationResponseLinks: {
+        type: 'object',
+        properties: {
+          first: {
+            type: 'string',
+            example: 'http://cats.com/cats?limit=10',
+            description:
+              'A URL for the first page to call | "" (blank) if no route is defined. Do note that links.first may not have the \'page\' query param defined',
+          },
+          previous: {
+            type: 'string',
+            example: 'http://cats.com/cats?page=1&limit=10',
+            description:
+              'A URL for the previous page to call | "" (blank) if no previous to call',
+          },
+          next: {
+            type: 'string',
+            example: 'http://cats.com/cats?page=3&limit=10',
+            description:
+              'A URL for the next page to call | "" (blank) if no page to call',
+          },
+          last: {
+            type: 'string',
+            example: 'http://cats.com/cats?page=5&limit=10',
+            description:
+              'A URL for the last page to call | "" (blank) if no route is defined',
+          },
+        },
       },
     },
   },

@@ -1,6 +1,12 @@
 import { ImageEntity } from 'src/models/image/entities/image.entity';
 import { PetTypeEntity } from 'src/models/pet-types/entities/pet-type.entity';
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToOne,
+} from 'typeorm';
 import { BasePrimaryEntity } from '../../../common/entities/BasePrimaryEntity';
 
 @Entity({
@@ -14,16 +20,20 @@ export class PetEntity extends BasePrimaryEntity {
   name: string;
 
   @Column({
-    length: 512,
+    length: 500,
     type: 'varchar',
+    nullable: true,
   })
   bio: string;
 
-  @OneToOne(() => PetTypeEntity)
+  @OneToOne(() => PetTypeEntity, { nullable: true })
   @JoinColumn()
   petType: PetTypeEntity;
 
   @OneToOne(() => ImageEntity)
   @JoinColumn()
   image: ImageEntity;
+
+  @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  declare createdAt: Date;
 }
