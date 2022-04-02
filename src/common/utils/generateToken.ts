@@ -6,7 +6,7 @@ export const generateToken = ({ byteLength = 64 } = {}): Promise<string> => {
       if (err) {
         reject(err);
       } else {
-        resolve(buffer.toString('base64'));
+        resolve(buffer.toString('hex'));
       }
     });
   });
