@@ -1,4 +1,13 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+  UsePipes,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { RequestValidationPipe } from 'src/common/pipes/RequestValidationPipe.pipe';
 import { CreatePetDTO } from './dtos/createPet.dto';
 import { CreatePetService } from './services/create-pet.service';
 
@@ -7,7 +16,12 @@ export class PetsController {
   constructor(private createPetService: CreatePetService) {}
 
   @Post('/')
-  createPet(@Body() body: CreatePetDTO) {
-    return this.createPetService.createPet(body);
+  @UsePipes(RequestValidationPipe)
+  @UseInterceptors(FileInterceptor('image'))
+  createPet(
+    @Body() createPetDto: CreatePetDTO,
+    @UploadedFile() image: Express.Multer.File,
+  ) {
+    return this.createPetService.createPet(createPetDto, image);
   }
 }

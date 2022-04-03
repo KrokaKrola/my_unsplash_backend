@@ -19,6 +19,7 @@ export class ImageEntity extends BasePrimaryEntity {
 
   @Column({
     type: 'json',
+    nullable: true,
   })
   cropSizes: string;
 

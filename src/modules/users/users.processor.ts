@@ -8,9 +8,9 @@ export class UsersProcessor {
   constructor(private readonly mailerService: MailerService) {}
 
   @Process('sendVerificationEmail')
-  public async handleSend(job: Job<SendRegistrationEmailQueue>) {
+  public handleSend(job: Job<SendRegistrationEmailQueue>): void {
     try {
-      return await this.mailerService.sendEmail(
+      void this.mailerService.sendEmail(
         {
           from: 'harlamsan@gmail.com',
           to: job.data.email,

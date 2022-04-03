@@ -34,7 +34,10 @@ export class MailerService {
     // this.transporter.use('compile', hbs(hbsEmailConfig));
   }
 
-  public async sendEmail(sendOptions: ISendMailOptions, mailId: number) {
+  public async sendEmail(
+    sendOptions: ISendMailOptions,
+    mailId: number,
+  ): Promise<void> {
     const mail = await this.mailRepository.findOne(mailId);
 
     if (!mail) {
