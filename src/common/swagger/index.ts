@@ -1104,11 +1104,24 @@ const swaggerDescription = {
             type: 'object',
             required: true,
             properties: {
+              id: {
+                type: 'number',
+                example: 1,
+                required: true,
+              },
               hash: {
                 type: 'string',
                 description: 'Hash of uploaded image',
                 example:
                   'eab39a72f43d2c84160cf58659c78e646725b0c28fb9c6f8e359462888950e14',
+              },
+              imageStatus: {
+                type: 'string',
+                enum: ['processing', 'optimized', 'error'],
+              },
+              originalDimensions: {
+                type: 'string',
+                example: '"{"height":1193,"width":1386,"type":"png"}"',
               },
             },
           },

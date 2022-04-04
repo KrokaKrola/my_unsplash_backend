@@ -23,19 +23,7 @@ export class ImagesService {
     private readonly imageOptimizationQueue: Queue,
   ) {}
 
-  getImageSize(image: Express.Multer.File): number {
-    return image.size;
-  }
-
-  getImageFileType(image: Express.Multer.File): string {
-    return image.mimetype;
-  }
-
-  getImageOriginalName(image: Express.Multer.File): string {
-    return image.originalname;
-  }
-
-  getImageDimensions(image: Express.Multer.File): Promise<ISize> {
+  private getImageDimensions(image: Express.Multer.File): Promise<ISize> {
     return new Promise((resolve, reject) => {
       try {
         const result = imageSize(image.buffer);
@@ -46,11 +34,11 @@ export class ImagesService {
     });
   }
 
-  validateImageMaxSize(size: number, maxSize: number) {
+  private validateImageMaxSize(size: number, maxSize: number) {
     return size < maxSize;
   }
 
-  validateMinimumDimensions(
+  private validateMinimumDimensions(
     minimumDimensions: { width: number; height: number },
     dimensions: ISize,
   ) {
@@ -65,11 +53,11 @@ export class ImagesService {
     return true;
   }
 
-  validateMimetype(mimetype: string, supportedMimetypes: string[]) {
+  private validateMimetype(mimetype: string, supportedMimetypes: string[]) {
     return supportedMimetypes.includes(mimetype);
   }
 
-  async validateImage(
+  public async validateImage(
     image: Express.Multer.File,
     maxSize: number,
     minimumDimensions: { width: number; height: number },
@@ -123,7 +111,7 @@ export class ImagesService {
         isValid: true,
         errors: {},
         imageMeta: {
-          originalName: this.getImageOriginalName(image),
+          originalName: image.originalname,
           size: image.size,
           mimetype: image.mimetype,
           dimensions: imageDimensions,
@@ -134,7 +122,7 @@ export class ImagesService {
     }
   }
 
-  parseImageType(mimeType: string) {
+  private parseImageType(mimeType: string) {
     if (mimeType === 'image/jpeg') {
       return ImageType.JPEG;
     }
@@ -148,7 +136,7 @@ export class ImagesService {
     }
   }
 
-  async createImage(
+  public async createImage(
     imageFile: Express.Multer.File,
     size: number,
     mimetype: string,
@@ -181,7 +169,7 @@ export class ImagesService {
     return imageEntity;
   }
 
-  async optimizeImage(id: number, type: string) {
+  public async optimizeImage(id: number, type: string) {
     const image = await this.imageEntityRepository.findOne(id);
     if (image) {
       try {
