@@ -2,6 +2,7 @@ import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PetTypeEntity } from 'src/models/pet-types/entities/pet-type.entity';
 import { PetEntity } from 'src/models/pets/entities/pet.entity';
+import { UserEntity } from 'src/models/users/entities/user.entity';
 import { ImagesService } from 'src/modules/images/images.service';
 import { Repository } from 'typeorm';
 import { CreatePetDTO } from '../dtos/createPet.dto';
@@ -14,12 +15,15 @@ export class CreatePetService {
     private petEntityRepository: Repository<PetEntity>,
     @InjectRepository(PetTypeEntity)
     private petTypeEntityRepository: Repository<PetTypeEntity>,
+    @InjectRepository(UserEntity)
+    private userEntityRepository: Repository<UserEntity>,
     private imagesService: ImagesService,
   ) {}
 
   async createPet(
     createPetDto: CreatePetDTO,
     image: Express.Multer.File,
+    userId: number,
   ): Promise<PetDto> {
     const validateImageResult = await this.imagesService.validateImage(
       image,
@@ -62,6 +66,8 @@ export class CreatePetService {
       pet.petType = null;
     }
 
+    const user = await this.userEntityRepository.findOne(userId);
+
     const { size, dimensions, mimetype, originalName } =
       validateImageResult.imageMeta;
 
@@ -75,6 +81,7 @@ export class CreatePetService {
     );
 
     pet.image = imageEntity;
+    pet.user = user;
 
     return await this.petEntityRepository.save(pet);
   }

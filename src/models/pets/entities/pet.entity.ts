@@ -1,10 +1,12 @@
 import { ImageEntity } from 'src/models/image/entities/image.entity';
 import { PetTypeEntity } from 'src/models/pet-types/entities/pet-type.entity';
+import { UserEntity } from 'src/models/users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
 } from 'typeorm';
 import { BasePrimaryEntity } from '../../../common/entities/BasePrimaryEntity';
@@ -25,6 +27,9 @@ export class PetEntity extends BasePrimaryEntity {
     nullable: true,
   })
   bio: string;
+
+  @ManyToOne(() => UserEntity)
+  user: UserEntity;
 
   @OneToOne(() => PetTypeEntity, { nullable: true })
   @JoinColumn()

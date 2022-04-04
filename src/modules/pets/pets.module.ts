@@ -5,9 +5,13 @@ import { PetEntity } from 'src/models/pets/entities/pet.entity';
 import { PetsController } from './pets.controller';
 import { CreatePetService } from './services/create-pet.service';
 import { ImagesModule } from '../images/images.module';
+import { UserEntity } from 'src/models/users/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PetEntity, PetTypeEntity]), ImagesModule],
+  imports: [
+    TypeOrmModule.forFeature([PetEntity, PetTypeEntity, UserEntity]),
+    ImagesModule,
+  ],
   controllers: [PetsController],
   providers: [CreatePetService],
 })
