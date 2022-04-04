@@ -1,9 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Queue } from 'bull';
 import imageSize from 'image-size';
-import { ISizeCalculationResult } from 'image-size/dist/types/interface';
+import { ISize } from 'image-size/dist/types/interface';
+import { generateToken } from 'src/common/utils/generateToken';
+import { ImageEntity } from 'src/models/image/entities/image.entity';
+import { ImageType } from 'src/models/image/enums/image-type.enum';
+import { Repository } from 'typeorm';
+import * as sharp from 'sharp';
+import { createDirectory, PROJECT_DIR } from 'src/common/utils/file-system';
+import { ImageStatus } from 'src/models/image/enums/image-status.enum';
 
 @Injectable()
 export class ImagesService {
+  private readonly logger = new Logger(ImagesService.name);
+
+  constructor(
+    @InjectRepository(ImageEntity)
+    private imageEntityRepository: Repository<ImageEntity>,
+    @InjectQueue('imageOptimizationQueue')
+    private readonly imageOptimizationQueue: Queue,
+  ) {}
+
   getImageSize(image: Express.Multer.File): number {
     return image.size;
   }
@@ -16,18 +35,14 @@ export class ImagesService {
     return image.originalname;
   }
 
-  getImageDimensions(
-    image: Express.Multer.File,
-  ): Promise<ISizeCalculationResult> {
+  getImageDimensions(image: Express.Multer.File): Promise<ISize> {
     return new Promise((resolve, reject) => {
-      //@ts-ignore
-      imageSize(image.buffer, (err, result) => {
-        if (err) {
-          reject(err);
-        }
-
+      try {
+        const result = imageSize(image.buffer);
         resolve(result);
-      });
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 
@@ -37,7 +52,7 @@ export class ImagesService {
 
   validateMinimumDimensions(
     minimumDimensions: { width: number; height: number },
-    dimensions: ISizeCalculationResult,
+    dimensions: ISize,
   ) {
     if (dimensions.height < minimumDimensions.height) {
       return false;
@@ -108,6 +123,7 @@ export class ImagesService {
         isValid: true,
         errors: {},
         imageMeta: {
+          originalName: this.getImageOriginalName(image),
           size: image.size,
           mimetype: image.mimetype,
           dimensions: imageDimensions,
@@ -115,6 +131,83 @@ export class ImagesService {
       };
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  parseImageType(mimeType: string) {
+    if (mimeType === 'image/jpeg') {
+      return ImageType.JPEG;
+    }
+
+    if (mimeType === 'image/jpg') {
+      return ImageType.JPEG;
+    }
+
+    if (mimeType === 'image/png') {
+      return ImageType.PNG;
+    }
+  }
+
+  async createImage(
+    imageFile: Express.Multer.File,
+    size: number,
+    mimetype: string,
+    dimensions: { width: number; height: number },
+    originalName: string,
+    type: string,
+  ) {
+    const image = new ImageEntity();
+    image.hash = await generateToken({ byteLength: 32 });
+    image.imageSize = size;
+    image.originalDimensions = JSON.stringify(dimensions);
+    image.originalName = originalName;
+    image.imageType = this.parseImageType(mimetype);
+
+    const imageEntity = await this.imageEntityRepository.save(image);
+
+    await createDirectory(`${PROJECT_DIR}/public/images/${type}/${image.hash}`);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    await sharp(imageFile.buffer)
+      .toFormat('jpeg')
+      .toFile(
+        `${PROJECT_DIR}/public/images/${type}/${image.hash}/original.jpeg`,
+      );
+
+    await this.imageOptimizationQueue.add('optimize', {
+      id: imageEntity.id,
+      type,
+    });
+
+    return imageEntity;
+  }
+
+  async optimizeImage(id: number, type: string) {
+    const image = await this.imageEntityRepository.findOne(id);
+    if (image) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const result = await sharp(
+          `${process.cwd()}/public/images/${type}/${image.hash}/original.jpeg`,
+        )
+          .jpeg({
+            quality: 80,
+          })
+          .toFile(
+            `${process.cwd()}/public/images/${type}/${
+              image.hash
+            }/optimized.jpeg`,
+          );
+        image.imageStatus = ImageStatus.OPTIMIZED;
+        image.imageOptimizationLog = JSON.stringify(result);
+        await this.imageEntityRepository.save(image);
+      } catch (error) {
+        this.logger.error(error);
+        image.imageStatus = ImageStatus.ERROR;
+        image.imageOptimizationLog = JSON.stringify(error);
+        await this.imageEntityRepository.save(image);
+      }
+    } else {
+      this.logger.error(`Image with id ${id} not found in database`);
     }
   }
 }

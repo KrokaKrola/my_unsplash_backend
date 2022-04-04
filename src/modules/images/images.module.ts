@@ -7,10 +7,10 @@ import { ImageOptimizationProcessor } from './optimize.processor';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([ImageEntity]),
     BullModule.registerQueue({
       name: 'imageOptimizationQueue',
     }),
-    TypeOrmModule.forFeature([ImageEntity]),
   ],
   providers: [ImagesService, ImageOptimizationProcessor],
   exports: [ImagesService],

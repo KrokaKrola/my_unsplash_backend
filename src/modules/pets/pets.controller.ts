@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Post,
   UploadedFile,
@@ -17,6 +18,7 @@ export class PetsController {
 
   @Post('/')
   @UsePipes(RequestValidationPipe)
+  @UseInterceptors(ClassSerializerInterceptor)
   @UseInterceptors(FileInterceptor('image'))
   createPet(
     @Body() createPetDto: CreatePetDTO,

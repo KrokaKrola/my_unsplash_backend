@@ -1,10 +1,4 @@
-import {
-  IsInt,
-  IsNotEmpty,
-  IsNumber,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, MaxLength, MinLength } from 'class-validator';
 
 export class CreatePetDTO {
   @IsNotEmpty()
@@ -15,7 +9,6 @@ export class CreatePetDTO {
   @MaxLength(500)
   bio: string;
 
-  @IsNumber()
-  @IsInt()
+  @IsOptional()
   typeId: number;
 }
