@@ -2,7 +2,9 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Get,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -10,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserId } from 'src/common/decorators/user.decorator';
+import { PaginationParamsDto } from 'src/common/dtos/paginationParams.dto';
 import { RequestValidationPipe } from 'src/common/pipes/RequestValidationPipe.pipe';
 import JwtAuthenticationGuard from '../auth/guards/jwt.guard';
 import { CreatePetDTO } from './dtos/createPet.dto';
@@ -30,5 +33,12 @@ export class PetsController {
     @UserId() userId: number,
   ) {
     return this.createPetService.createPet(createPetDto, image, userId);
+  }
+
+  @Get('/')
+  @UsePipes(RequestValidationPipe)
+  @UseInterceptors(ClassSerializerInterceptor)
+  getAll(@Query() query: PaginationParamsDto) {
+    return query;
   }
 }
