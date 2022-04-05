@@ -2,7 +2,10 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  Param,
   Post,
   Query,
   UploadedFile,
@@ -17,6 +20,8 @@ import { PaginationParamsDto } from 'src/common/dtos/paginationParams.dto';
 import { RequestValidationPipe } from 'src/common/pipes/RequestValidationPipe.pipe';
 import JwtAuthenticationGuard from '../auth/guards/jwt.guard';
 import { CreatePetDTO } from './dtos/createPet.dto';
+import { DeletePetDto } from './dtos/deletePet.dto';
+import { GetPetDto } from './dtos/getPet.dto';
 import { PetDto } from './dtos/pet.dto';
 import { CreatePetService } from './services/create-pet.service';
 import { PetsService } from './services/pets.service';
@@ -50,5 +55,25 @@ export class PetsController {
     @UserId() userId: number,
   ): Promise<Pagination<PetDto>> {
     return this.petsService.getAll(query, userId);
+  }
+
+  @Get('/:id')
+  @UsePipes(RequestValidationPipe)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(JwtAuthenticationGuard)
+  getOne(
+    @Param() getPetDto: GetPetDto,
+    @UserId() userId: number,
+  ): Promise<PetDto> {
+    return this.petsService.getOne(getPetDto, userId);
+  }
+
+  @Delete('/:id')
+  @UsePipes(RequestValidationPipe)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(JwtAuthenticationGuard)
+  @HttpCode(204)
+  deleteOne(@Param() deletePetDto: DeletePetDto, @UserId() userId: number) {
+    return this.petsService.deleteOne(deletePetDto, userId);
   }
 }

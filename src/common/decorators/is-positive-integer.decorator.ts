@@ -20,7 +20,6 @@ export function IsPositiveInteger(
       },
       validator: {
         validate(value: any, args: ValidationArguments) {
-          console.log(args, property);
           const number = Number(value);
           if (Number.isNaN(number)) {
             return false;
