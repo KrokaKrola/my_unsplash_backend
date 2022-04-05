@@ -6,6 +6,7 @@ import { PetsController } from './pets.controller';
 import { CreatePetService } from './services/create-pet.service';
 import { ImagesModule } from '../images/images.module';
 import { UserEntity } from 'src/models/users/entities/user.entity';
+import { PetsService } from './services/pets.service';
 
 @Module({
   imports: [
@@ -13,6 +14,6 @@ import { UserEntity } from 'src/models/users/entities/user.entity';
     ImagesModule,
   ],
   controllers: [PetsController],
-  providers: [CreatePetService],
+  providers: [CreatePetService, PetsService],
 })
 export class PetsModule {}

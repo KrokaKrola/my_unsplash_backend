@@ -58,6 +58,7 @@ module.exports = {
     '@typescript-eslint/await-thenable': 'off',
     'unicorn/no-null': 'off',
     'unicorn/import-style': 'off',
-    '@typescript-eslint/no-misused-promises': 'off'
+    '@typescript-eslint/no-misused-promises': 'off',
+    'unicorn/prefer-module': 'off'
   },
 };

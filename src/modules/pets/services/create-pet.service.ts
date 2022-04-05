@@ -85,4 +85,6 @@ export class CreatePetService {
 
     return await this.petEntityRepository.save(pet);
   }
+
+  async getAll() {}
 }

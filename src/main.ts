@@ -6,9 +6,11 @@ import { ApiConfigService } from './config/api/configuration.service';
 import * as cookieParser from 'cookie-parser';
 import * as swaggerUi from 'swagger-ui-express';
 import swaggerDescription from 'src/common/swagger';
+import { join } from 'path';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.use(cookieParser());
@@ -17,6 +19,8 @@ async function bootstrap() {
   const apiConfig: ApiConfigService = app.get(ApiConfigService);
 
   apiConfig.baseUrl;
+
+  app.useStaticAssets(join(__dirname, '..', 'public'));
 
   app.use(
     '/api-docs',
