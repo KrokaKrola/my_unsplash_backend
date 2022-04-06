@@ -7,6 +7,7 @@ export class CreatePetDTO {
   name: string;
 
   @MaxLength(500)
+  @IsOptional()
   bio: string;
 
   @IsOptional()

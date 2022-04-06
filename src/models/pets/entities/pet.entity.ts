@@ -31,7 +31,7 @@ export class PetEntity extends BasePrimaryEntity {
   @ManyToOne(() => UserEntity)
   user: UserEntity;
 
-  @OneToOne(() => PetTypeEntity, { nullable: true })
+  @ManyToOne(() => PetTypeEntity, { nullable: true })
   @JoinColumn()
   petType: PetTypeEntity;
 
