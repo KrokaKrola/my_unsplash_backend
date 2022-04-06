@@ -11,6 +11,8 @@ import { RedisProviderModule } from './config/database/redis/provider/provider.m
 import { EmailsConfigurationModule } from './config/emails/configuration.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtConfigurationModule } from './config/jwt/configuration.module';
+import { PetsModule } from './modules/pets/pets.module';
+import { ImagesModule } from './modules/images/images.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { JwtConfigurationModule } from './config/jwt/configuration.module';
     MailerModule,
     UsersModule,
     AuthModule,
+    PetsModule,
+    ImagesModule,
   ],
 })
 export class AppModule {}

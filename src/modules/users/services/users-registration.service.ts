@@ -100,7 +100,6 @@ export class UsersRegistrationService {
     response: Response,
     registerEmailVerify: RegisterEmailVerifyDto,
   ): Promise<UserEntity> {
-    console.log(registerEmailVerify);
     const verificationEmail = await this.emailVerificationRepository.findOne(
       {
         hash: registerEmailVerify.hash,

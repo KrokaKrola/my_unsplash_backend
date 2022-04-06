@@ -33,3 +33,6 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+public/images/pet-images/*
+public/images/post-images/*
