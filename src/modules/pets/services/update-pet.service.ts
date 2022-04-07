@@ -3,21 +3,16 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { PetTypeEntity } from 'src/models/pet-types/entities/pet-type.entity';
-import { PetEntity } from 'src/models/pets/entities/pet.entity';
+import { Image, PetType } from '@prisma/client';
 import { ImagesService } from 'src/modules/images/images.service';
-import { Repository } from 'typeorm';
+import { PrismaService } from 'src/prisma.service';
 import { UpdatePetDTO, UpdatePetParamDTO } from '../dtos/updatePet.dto';
 
 @Injectable()
 export class UpdatePetService {
   constructor(
-    @InjectRepository(PetEntity)
-    private petEntityRepository: Repository<PetEntity>,
-    @InjectRepository(PetTypeEntity)
-    private petTypeEntityRepository: Repository<PetTypeEntity>,
     private imagesService: ImagesService,
+    private prismaService: PrismaService,
   ) {}
 
   async updateOne(
@@ -25,9 +20,12 @@ export class UpdatePetService {
     updatePetDto: UpdatePetDTO,
     image: Express.Multer.File,
     userId: number,
-  ): Promise<PetEntity> {
-    const pet = await this.petEntityRepository.findOne(paramDto.id, {
-      relations: ['user', 'petType'],
+  ) {
+    const pet = await this.prismaService.pet.findUnique({
+      where: { id: paramDto.id },
+      include: {
+        user: true,
+      },
     });
 
     if (!pet) {
@@ -38,20 +36,14 @@ export class UpdatePetService {
       throw new NotFoundException('Pet not found');
     }
 
-    if (updatePetDto.bio) {
-      pet.bio = updatePetDto.bio;
-    }
-
-    if (updatePetDto.name) {
-      pet.name = updatePetDto.name;
-    }
+    let newPetType: PetType;
 
     if (updatePetDto.typeId) {
-      const petTypeEntity = await this.petTypeEntityRepository.findOne(
-        updatePetDto.typeId,
-      );
+      newPetType = await this.prismaService.petType.findUnique({
+        where: { id: updatePetDto.typeId },
+      });
 
-      if (!petTypeEntity) {
+      if (!newPetType) {
         throw new UnprocessableEntityException([
           {
             property: 'typeId',
@@ -61,9 +53,9 @@ export class UpdatePetService {
           },
         ]);
       }
-
-      pet.petType = petTypeEntity;
     }
+
+    let newImage: Image;
 
     if (image) {
       const validateImageResult = await this.imagesService.validateImage(
@@ -85,7 +77,7 @@ export class UpdatePetService {
       const { size, dimensions, mimetype, originalName } =
         validateImageResult.imageMeta;
 
-      const imageEntity = await this.imagesService.createImage(
+      newImage = await this.imagesService.createImage(
         image,
         size,
         mimetype,
@@ -93,10 +85,18 @@ export class UpdatePetService {
         originalName,
         'pet-images',
       );
-
-      pet.image = imageEntity;
     }
 
-    return await this.petEntityRepository.save(pet);
+    return this.prismaService.pet.update({
+      where: {
+        id: paramDto.id,
+      },
+      data: {
+        bio: updatePetDto.bio ?? pet.bio,
+        name: updatePetDto.name ?? pet.name,
+        petTypeId: newPetType ? newPetType.id : pet.petTypeId,
+        imageId: newImage ? newImage.id : pet.imageId,
+      },
+    });
   }
 }

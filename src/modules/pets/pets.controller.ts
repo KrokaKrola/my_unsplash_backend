@@ -51,16 +51,16 @@ export class PetsController {
     return this.createPetService.createPet(createPetDto, image, userId);
   }
 
-  @Get('/')
-  @UsePipes(RequestValidationPipe)
-  @UseInterceptors(ClassSerializerInterceptor)
-  @UseGuards(JwtAuthenticationGuard)
-  getAll(
-    @Query() query: PaginationParamsDto = { limit: 10, page: 1 },
-    @UserId() userId: number,
-  ): Promise<Pagination<PetDto>> {
-    return this.petsService.getAll(query, userId);
-  }
+  // @Get('/')
+  // @UsePipes(RequestValidationPipe)
+  // @UseInterceptors(ClassSerializerInterceptor)
+  // @UseGuards(JwtAuthenticationGuard)
+  // getAll(
+  //   @Query() query: PaginationParamsDto = { limit: 10, page: 1 },
+  //   @UserId() userId: number,
+  // ): Promise<Pagination<PetDto>> {
+  //   return this.petsService.getAll(query, userId);
+  // }
 
   @Get('/:id')
   @UsePipes(RequestValidationPipe)
@@ -92,7 +92,7 @@ export class PetsController {
     @Body() updatePetDto: UpdatePetDTO,
     @UploadedFile() image: Express.Multer.File,
     @UserId() userId: number,
-  ): Promise<PetEntity> {
+  ) {
     return this.updatePetService.updateOne(
       updatePetParamDto,
       updatePetDto,

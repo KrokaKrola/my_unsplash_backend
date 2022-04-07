@@ -9,5 +9,5 @@ class ImageDto extends PickType(ImageEntity, [
 ]) {}
 
 export class PetDto extends PickType(PetEntity, []) {
-  image: ImageDto;
+  image?: ImageDto;
 }
