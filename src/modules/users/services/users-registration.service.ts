@@ -6,12 +6,6 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { RegisterUserDto } from 'src/modules/users/dtos/registerUser.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { RegistrationCandidateEntity } from 'src/models/users/entities/registration-candidate.entity';
-import { Repository } from 'typeorm';
-import { generateToken } from 'src/common/utils/generateToken';
-import { EmailVerificationEntity } from 'src/models/users/entities/email-verifications.entity';
-import { MailEntity } from 'src/models/emails/entities/mail.entity';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { SendRegistrationEmailQueue } from '../interfaces/SendRegistrationEmailQueue.interface';
@@ -20,39 +14,38 @@ import { generateFixedLengthInteger } from 'src/common/utils/generateFixedLength
 import { RegisterEmailVerifyDto } from 'src/modules/users/dtos/registerEmailVerify.dto';
 import { MailStatus } from 'src/models/emails/enums/mail-status';
 import { differenceInSeconds } from 'date-fns';
-import { UserEntity } from 'src/models/users/entities/user.entity';
 import { AuthService } from 'src/modules/auth/auth.service';
 import { Response } from 'express';
+import { PrismaService } from 'src/prisma.service';
+import { generateToken } from 'src/common/utils/generateToken';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UsersRegistrationService {
   constructor(
-    @InjectRepository(EmailVerificationEntity)
-    private emailVerificationRepository: Repository<EmailVerificationEntity>,
-    @InjectRepository(MailEntity)
-    private mailRepository: Repository<MailEntity>,
-    @InjectRepository(RegistrationCandidateEntity)
-    private registrationCandidateRepository: Repository<RegistrationCandidateEntity>,
-    @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
     @InjectQueue('registrationEmailsQueue') private readonly mailerQueue: Queue,
     private usersService: UsersService,
     private authService: AuthService,
+    private prismaService: PrismaService,
   ) {}
 
   async register(registerUserDto: RegisterUserDto) {
-    const existedEmailUser = await this.usersService.findOneByEmail(
-      registerUserDto.email,
-    );
+    const existedEmailUser = await this.prismaService.user.findUnique({
+      where: {
+        email: registerUserDto.email,
+      },
+    });
 
     // check if user with passed email already registered
     if (existedEmailUser) {
       throw new ConflictException('Credentials are incorrect');
     }
 
-    const existedUsernameUser = await this.usersService.findOneByUsername(
-      registerUserDto.username,
-    );
+    const existedUsernameUser = await this.prismaService.user.findUnique({
+      where: {
+        username: registerUserDto.username,
+      },
+    });
 
     // check if user with passed username already registered
     if (existedUsernameUser) {
@@ -60,30 +53,35 @@ export class UsersRegistrationService {
     }
 
     try {
-      const mailEntity = new MailEntity();
+      const emailVerificationHash = await generateToken({ byteLength: 32 });
+      const registrationCandidate =
+        await this.prismaService.registrationCandidate.create({
+          data: {
+            email: registerUserDto.email,
+            firstName: registerUserDto.firstName,
+            hash: emailVerificationHash,
+            lastName: registerUserDto.lastName,
+            password: registerUserDto.password,
+            username: registerUserDto.username,
+          },
+        });
 
-      const emailVerification = new EmailVerificationEntity();
+      const mail = await this.prismaService.mail.create({ data: {} });
 
-      emailVerification.mail = mailEntity;
-      emailVerification.hash = await generateToken({ byteLength: 32 });
-      emailVerification.code = generateFixedLengthInteger(6).toString();
-
-      const registrationCandidate = new RegistrationCandidateEntity(
-        registerUserDto,
-      );
-      registrationCandidate.hash = emailVerification.hash;
-
-      const [mail] = await Promise.all([
-        this.mailRepository.save(mailEntity),
-        this.emailVerificationRepository.save(emailVerification),
-        this.registrationCandidateRepository.save(registrationCandidate),
-      ]);
+      const emailVerification =
+        await this.prismaService.emailVerification.create({
+          data: {
+            code: generateFixedLengthInteger(6).toString(),
+            hash: emailVerificationHash,
+            maildId: mail.id,
+          },
+        });
 
       // add sendEmail task to queue in mailer.service.ts
       await this.mailerQueue.add('sendVerificationEmail', {
         id: mail.id,
         hash: emailVerification.hash,
-        email: registerUserDto.email,
+        email: registrationCandidate.email,
         code: emailVerification.code,
       } as SendRegistrationEmailQueue);
 
@@ -91,7 +89,6 @@ export class UsersRegistrationService {
         hash: emailVerification.hash,
       };
     } catch (error) {
-      console.log(error);
       throw new BadRequestException(error);
     }
   }
@@ -99,15 +96,19 @@ export class UsersRegistrationService {
   async registerEmailVerify(
     response: Response,
     registerEmailVerify: RegisterEmailVerifyDto,
-  ): Promise<UserEntity> {
-    const verificationEmail = await this.emailVerificationRepository.findOne(
-      {
-        hash: registerEmailVerify.hash,
-      },
-      {
-        relations: ['mail'],
-      },
-    );
+  ): Promise<User> {
+    const verificationEmail =
+      await this.prismaService.emailVerification.findFirst({
+        where: {
+          hash: registerEmailVerify.hash,
+        },
+        select: {
+          id: true,
+          mail: true,
+          code: true,
+          createdAt: true,
+        },
+      });
 
     // check if there is a verification email for given hash
     // hash is given on register attempt
@@ -131,8 +132,10 @@ export class UsersRegistrationService {
     }
 
     const registrationCandidate =
-      await this.registrationCandidateRepository.findOne({
-        hash: registerEmailVerify.hash,
+      await this.prismaService.registrationCandidate.findFirst({
+        where: {
+          hash: registerEmailVerify.hash,
+        },
       });
 
     // check if theres an registration candidate in DB
@@ -145,7 +148,11 @@ export class UsersRegistrationService {
       differenceInSeconds(new Date(), new Date(verificationEmail.createdAt)) >
       60
     ) {
-      await verificationEmail.remove();
+      await this.prismaService.emailVerification.delete({
+        where: {
+          id: verificationEmail.id,
+        },
+      });
       throw new UnprocessableEntityException([
         {
           property: 'code',
@@ -154,17 +161,27 @@ export class UsersRegistrationService {
       ]);
     }
 
-    const user = new UserEntity({
-      email: registrationCandidate.email,
-      firstName: registrationCandidate.firstName,
-      lastName: registrationCandidate.lastName,
-      username: registrationCandidate.username,
-      password: registrationCandidate.password,
+    const user = await this.prismaService.user.create({
+      data: {
+        email: registrationCandidate.email,
+        firstName: registrationCandidate.firstName,
+        lastName: registrationCandidate.lastName,
+        username: registrationCandidate.username,
+        password: registrationCandidate.password,
+      },
     });
 
-    await this.userRepository.save(user);
-    await registrationCandidate.remove();
-    await verificationEmail.remove();
+    await this.prismaService.emailVerification.delete({
+      where: {
+        id: verificationEmail.id,
+      },
+    });
+
+    await this.prismaService.registrationCandidate.delete({
+      where: {
+        id: registrationCandidate.id,
+      },
+    });
 
     const refreshToken = this.authService.getCookieWithJwtRefreshToken({
       id: user.id,

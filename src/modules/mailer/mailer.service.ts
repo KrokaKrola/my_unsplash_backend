@@ -5,11 +5,9 @@ import { Logger } from '@nestjs/common';
 import { ISendMailOptions } from '@nestjs-modules/mailer';
 import * as nodemailer from 'nodemailer';
 import { EmailsConfigurationService } from 'src/config/emails/configuration.service';
-import { InjectRepository } from '@nestjs/typeorm';
-import { MailEntity } from 'src/models/emails/entities/mail.entity';
-import { Repository } from 'typeorm';
 import { MailStatus as MailStatus } from 'src/models/emails/enums/mail-status';
 import { stringifyError } from 'src/common/utils/stringifyError';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class MailerService {
@@ -19,8 +17,7 @@ export class MailerService {
 
   constructor(
     private readonly emailConfigService: EmailsConfigurationService,
-    @InjectRepository(MailEntity)
-    private mailRepository: Repository<MailEntity>,
+    private prismaService: PrismaService,
   ) {
     this.transporter = nodemailer.createTransport({
       host: emailConfigService.host,
@@ -38,7 +35,11 @@ export class MailerService {
     sendOptions: ISendMailOptions,
     mailId: number,
   ): Promise<void> {
-    const mail = await this.mailRepository.findOne(mailId);
+    const mail = await this.prismaService.mail.findUnique({
+      where: {
+        id: mailId,
+      },
+    });
 
     if (!mail) {
       throw new UnprocessableEntityException(
@@ -47,8 +48,14 @@ export class MailerService {
       );
     }
 
-    mail.status = MailStatus.PROCESSING;
-    await this.mailRepository.save(mail);
+    await this.prismaService.mail.update({
+      data: {
+        status: MailStatus.PROCESSING,
+      },
+      where: {
+        id: mailId,
+      },
+    });
 
     retry(
       {
@@ -63,13 +70,25 @@ export class MailerService {
       async (error, result) => {
         console.log('error, result: ', error, result);
         if (error) {
-          mail.status = MailStatus.FAILED;
-          mail.info = stringifyError(error, null, '\t');
-          await this.mailRepository.save(mail);
+          await this.prismaService.mail.update({
+            data: {
+              status: MailStatus.FAILED,
+              info: stringifyError(error, null, '\t'),
+            },
+            where: {
+              id: mailId,
+            },
+          });
         } else {
-          mail.status = MailStatus.SENT;
-          mail.info = JSON.stringify(result);
-          await this.mailRepository.save(mail);
+          await this.prismaService.mail.update({
+            data: {
+              status: MailStatus.SENT,
+              info: JSON.stringify(result),
+            },
+            where: {
+              id: mailId,
+            },
+          });
         }
       },
     );

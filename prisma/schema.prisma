@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id    Int    @id() @default(autoincrement())
+  name  String @db.VarChar
+  posts Post[]
+}
+
+model EmailVerification {
+  id        Int      @id() @default(autoincrement())
+  hash      String   @db.VarChar
+  code      String   @db.VarChar(6)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  maildId   Int      @unique
+  mail      Mail     @relation(fields: [maildId], references: [id])
+}
+
+model Image {
+  id                   Int             @id() @default(autoincrement())
+  createdAt            DateTime        @default(now()) @db.Timestamptz(6)
+  deletedAt            DateTime?       @db.Timestamptz(6)
+  updatedAt            DateTime        @default(now()) @db.Timestamp(6)
+  hash                 String          @db.VarChar
+  originalName         String          @db.VarChar
+  cropSizes            Json?           @db.Json
+  imageStatus          ImageStatusEnum @default(processing)
+  imageType            ImageTypeEnum
+  originalDimensions   String          @db.VarChar
+  imageSize            Int
+  imageOptimizationLog Json?           @db.Json
+}
+
+model Mail {
+  id                 Int                @id() @default(autoincrement())
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+  deletedAt          DateTime?          @db.Timestamptz(6)
+  updatedAt          DateTime           @default(now()) @db.Timestamp(6)
+  status             MailStatusEnum     @default(pending)
+  info               Json?              @db.Json
+  emailVerifications EmailVerification?
+}
+
+model PetType {
+  id   Int    @id() @default(autoincrement())
+  name String @db.VarChar
+  pets Pet[]
+}
+
+model Pet {
+  id        Int       @id() @default(autoincrement())
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  deletedAt DateTime? @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @db.Timestamp(6)
+  name      String    @db.VarChar(128)
+  bio       String?   @db.VarChar(500)
+  petTypeId Int
+  userId    Int
+  postId    Int
+  petType   PetType?  @relation(fields: [petTypeId], references: [id])
+  user      User?     @relation(fields: [userId], references: [id])
+  posts     Post[]
+}
+
+model Post {
+  id         Int       @id() @default(autoincrement())
+  createdAt  DateTime  @default(now()) @db.Timestamptz(6)
+  deletedAt  DateTime? @db.Timestamptz(6)
+  updatedAt  DateTime  @default(now()) @db.Timestamp(6)
+  viewsCount Int       @default(0)
+  likesCount Int       @default(0)
+  userId     Int
+  petId      Int?
+  Pet        Pet?      @relation(fields: [petId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
+  Category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId Int?
+}
+
+model RegistrationCandidate {
+  id        Int       @id() @default(autoincrement())
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  deletedAt DateTime? @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @db.Timestamp(6)
+  firstName String    @db.VarChar(128)
+  lastName  String    @db.VarChar(256)
+  email     String    @db.VarChar(256)
+  username  String    @db.VarChar(64)
+  password  String    @db.VarChar(128)
+  hash      String    @db.VarChar
+}
+
+model User {
+  id                        Int       @id() @default(autoincrement())
+  createdAt                 DateTime  @default(now()) @db.Timestamptz(6)
+  deletedAt                 DateTime? @db.Timestamptz(6)
+  updatedAt                 DateTime  @default(now()) @db.Timestamp(6)
+  firstName                 String    @db.VarChar(128)
+  lastName                  String    @db.VarChar(256)
+  email                     String    @unique() @db.VarChar(256)
+  username                  String    @unique() @db.VarChar(64)
+  password                  String    @db.VarChar(128)
+  currentHashedRefreshToken String?   @db.VarChar
+  posts                     Post[]
+  pets                      Pet[]
+}
+
+enum ImageStatusEnum {
+  processing
+  optimized
+  error
+}
+
+enum ImageTypeEnum {
+  jpg
+  jpeg
+  png
+}
+
+enum MailStatusEnum {
+  pending
+  processing
+  sent
+  failed
+}

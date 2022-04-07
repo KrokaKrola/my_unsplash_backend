@@ -22,7 +22,6 @@ import { Request, Response } from 'express';
 import JwtAuthenticationGuard from '../auth/guards/jwt.guard';
 import { UsersService } from './services/users.service';
 import JwtRefreshTokenGuard from '../auth/guards/jwt-refresh.guard';
-import { UserEntity } from 'src/models/users/entities/user.entity';
 import { RegisterUserDto } from './dtos/registerUser.dto';
 import { RegisterEmailVerifyDto } from './dtos/registerEmailVerify.dto';
 import { LoginUserDto } from './dtos/loginUser.dto';
@@ -48,7 +47,7 @@ export class UsersController {
   registerEmailVerify(
     @Res({ passthrough: true }) response: Response,
     @Body() registerEmailVerifyDto: RegisterEmailVerifyDto,
-  ): Promise<UserEntity> {
+  ) {
     return this.usersRegistrationService.registerEmailVerify(
       response,
       registerEmailVerifyDto,
