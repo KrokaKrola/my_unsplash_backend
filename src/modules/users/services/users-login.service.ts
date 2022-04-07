@@ -7,7 +7,7 @@ import { Response } from 'express';
 import { LoginUserDto } from 'src/modules/users/dtos/loginUser.dto';
 import { AuthService } from 'src/modules/auth/auth.service';
 import { UsersService } from './users.service';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 @Injectable()
 export class UsersLoginService {

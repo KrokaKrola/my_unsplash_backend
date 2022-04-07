@@ -8,7 +8,7 @@ import * as swaggerUi from 'swagger-ui-express';
 import swaggerDescription from 'src/common/swagger';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from './modules/prisma/prisma.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);

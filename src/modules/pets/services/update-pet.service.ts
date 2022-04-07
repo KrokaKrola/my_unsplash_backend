@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { Image, PetType } from '@prisma/client';
 import { ImagesService } from 'src/modules/images/images.service';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { UpdatePetDTO, UpdatePetParamDTO } from '../dtos/updatePet.dto';
 
 @Injectable()

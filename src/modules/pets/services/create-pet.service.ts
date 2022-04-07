@@ -1,6 +1,6 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { ImagesService } from 'src/modules/images/images.service';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { CreatePetDTO } from '../dtos/createPet.dto';
 import { PetDto } from '../dtos/pet.dto';
 

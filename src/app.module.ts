@@ -11,7 +11,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { JwtConfigurationModule } from './config/jwt/configuration.module';
 import { PetsModule } from './modules/pets/pets.module';
 import { ImagesModule } from './modules/images/images.module';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from './modules/prisma/prisma.service';
 
 @Module({
   imports: [

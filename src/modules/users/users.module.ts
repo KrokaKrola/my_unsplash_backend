@@ -7,7 +7,7 @@ import { UsersRegistrationService } from './services/users-registration.service'
 import { UsersLoginService } from './services/users-login.service';
 import { UsersService } from './services/users.service';
 import { AuthModule } from '../auth/auth.module';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 @Module({
   imports: [

@@ -6,7 +6,7 @@ import {
 import { Request, Response } from 'express';
 import { AuthService } from 'src/modules/auth/auth.service';
 import * as crypto from 'crypto';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 @Injectable()
 export class UsersService {

@@ -12,11 +12,11 @@ import { SendRegistrationEmailQueue } from '../interfaces/SendRegistrationEmailQ
 import { UsersService } from './users.service';
 import { generateFixedLengthInteger } from 'src/common/utils/generateFixedLengthInteger';
 import { RegisterEmailVerifyDto } from 'src/modules/users/dtos/registerEmailVerify.dto';
-import { MailStatus } from 'src/models/emails/enums/mail-status';
+import { MailStatus } from 'src/common/enums/mail-status';
 import { differenceInSeconds } from 'date-fns';
 import { AuthService } from 'src/modules/auth/auth.service';
 import { Response } from 'express';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { generateToken } from 'src/common/utils/generateToken';
 import { User } from '@prisma/client';
 

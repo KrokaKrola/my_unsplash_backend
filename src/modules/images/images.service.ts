@@ -4,11 +4,11 @@ import { Queue } from 'bull';
 import imageSize from 'image-size';
 import { ISize } from 'image-size/dist/types/interface';
 import { generateToken } from 'src/common/utils/generateToken';
-import { ImageType } from 'src/models/image/enums/image-type.enum';
+import { ImageType } from 'src/common/enums/image/enums/image-type.enum';
 import * as sharp from 'sharp';
 import { createDirectory, PROJECT_DIR } from 'src/common/utils/file-system';
-import { ImageStatus } from 'src/models/image/enums/image-status.enum';
-import { PrismaService } from 'src/prisma.service';
+import { ImageStatus } from 'src/common/enums/image-status.enum';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 @Injectable()
 export class ImagesService {

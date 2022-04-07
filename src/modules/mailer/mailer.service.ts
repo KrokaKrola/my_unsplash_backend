@@ -5,9 +5,9 @@ import { Logger } from '@nestjs/common';
 import { ISendMailOptions } from '@nestjs-modules/mailer';
 import * as nodemailer from 'nodemailer';
 import { EmailsConfigurationService } from 'src/config/emails/configuration.service';
-import { MailStatus as MailStatus } from 'src/models/emails/enums/mail-status';
+import { MailStatus as MailStatus } from 'src/common/enums/mail-status';
 import { stringifyError } from 'src/common/utils/stringifyError';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 @Injectable()
 export class MailerService {

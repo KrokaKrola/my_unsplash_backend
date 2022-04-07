@@ -8,18 +8,14 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
   UsePipes,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Pagination } from 'nestjs-typeorm-paginate';
 import { UserId } from 'src/common/decorators/user.decorator';
-import { PaginationParamsDto } from 'src/common/dtos/paginationParams.dto';
 import { RequestValidationPipe } from 'src/common/pipes/RequestValidationPipe.pipe';
-import { PetEntity } from 'src/models/pets/entities/pet.entity';
 import JwtAuthenticationGuard from '../auth/guards/jwt.guard';
 import { CreatePetDTO } from './dtos/createPet.dto';
 import { DeletePetDto } from './dtos/deletePet.dto';
