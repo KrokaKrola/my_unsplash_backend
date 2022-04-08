@@ -1,9 +1,7 @@
 import { Module } from '@nestjs/common';
 import { LoggerModule } from './common/logger/Logger.module';
 import { AppConfigModule } from './config/app/configuration.module';
-import { PostgresConfigModule } from './config/database/postgres/configuration/configuration.module';
 import { RedisConfigModule } from './config/database/redis/configuration.module';
-import { ProviderModule as PostgresProvider } from './config/database/postgres/provider/provider.module';
 import { UsersModule } from './modules/users/users.module';
 import { ApiConfigurationModule } from './config/api/configuration.module';
 import { MailerModule } from './modules/mailer/mailer.module';
@@ -13,17 +11,16 @@ import { AuthModule } from './modules/auth/auth.module';
 import { JwtConfigurationModule } from './config/jwt/configuration.module';
 import { PetsModule } from './modules/pets/pets.module';
 import { ImagesModule } from './modules/images/images.module';
+import { PrismaService } from './modules/prisma/prisma.service';
 
 @Module({
   imports: [
     LoggerModule,
     AppConfigModule,
-    PostgresConfigModule,
     RedisConfigModule,
     ApiConfigurationModule,
     EmailsConfigurationModule,
     JwtConfigurationModule,
-    PostgresProvider,
     RedisProviderModule,
     MailerModule,
     UsersModule,
@@ -31,5 +28,6 @@ import { ImagesModule } from './modules/images/images.module';
     PetsModule,
     ImagesModule,
   ],
+  providers: [PrismaService],
 })
 export class AppModule {}

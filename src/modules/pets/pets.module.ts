@@ -1,20 +1,21 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { PetTypeEntity } from 'src/models/pet-types/entities/pet-type.entity';
-import { PetEntity } from 'src/models/pets/entities/pet.entity';
 import { PetsController } from './pets.controller';
 import { CreatePetService } from './services/create-pet.service';
 import { ImagesModule } from '../images/images.module';
-import { UserEntity } from 'src/models/users/entities/user.entity';
 import { PetsService } from './services/pets.service';
 import { UpdatePetService } from './services/update-pet.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { PaginateService } from '../paginate/paginate.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([PetEntity, PetTypeEntity, UserEntity]),
-    ImagesModule,
-  ],
+  imports: [ImagesModule],
   controllers: [PetsController],
-  providers: [CreatePetService, PetsService, UpdatePetService],
+  providers: [
+    CreatePetService,
+    PetsService,
+    UpdatePetService,
+    PrismaService,
+    PaginateService,
+  ],
 })
 export class PetsModule {}

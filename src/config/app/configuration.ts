@@ -5,4 +5,6 @@ export default registerAs('app', () => ({
   env: process.env.APP_ENV,
   name: process.env.APP_NAME,
   port: process.env.APP_PORT,
+  tokenSalt: process.env.APP_TOKEN_SALT,
+  passwordSalt: process.env.APP_PASSWORD_SALT,
 }));

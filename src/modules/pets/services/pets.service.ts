@@ -1,9 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { PaginationParamsDto } from 'src/common/dtos/paginationParams.dto';
-import { PetEntity } from 'src/models/pets/entities/pet.entity';
-import { Repository } from 'typeorm';
+import { PaginateService } from 'src/modules/paginate/paginate.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { DeletePetDto } from '../dtos/deletePet.dto';
 import { GetPetDto } from '../dtos/getPet.dto';
 import { PetDto } from '../dtos/pet.dto';
@@ -11,34 +9,59 @@ import { PetDto } from '../dtos/pet.dto';
 @Injectable()
 export class PetsService {
   constructor(
-    @InjectRepository(PetEntity)
-    private petEntityRepository: Repository<PetEntity>,
+    private prismaService: PrismaService,
+    private paginateService: PaginateService,
   ) {}
 
-  async getAll(
-    query: PaginationParamsDto,
-    userId: number,
-  ): Promise<Pagination<PetDto>> {
-    const queryBuilder = this.petEntityRepository
-      .createQueryBuilder('pet')
-      .leftJoinAndSelect('pet.user', 'user')
-      .leftJoinAndSelect('pet.petType', 'petType')
-      .leftJoinAndSelect('pet.image', 'image')
-      .where('pet.user.id = :id', { id: userId });
+  async getAll(query: PaginationParamsDto, userId: number) {
+    const findManyParams = this.paginateService.generateFindManyParams(query);
+    const pets = await this.prismaService.pet.findMany({
+      where: {
+        userId,
+      },
+      select: {
+        bio: true,
+        id: true,
+        image: {
+          select: {
+            hash: true,
+            imageStatus: true,
+            originalDimensions: true,
+          },
+        },
+        petType: true,
+      },
+      take: findManyParams.take,
+      skip: findManyParams.skip,
+    });
+    const totalPets = await this.prismaService.pet.count();
 
-    return paginate<PetEntity>(queryBuilder, { ...query, route: '/pets/' });
+    return this.paginateService.process(pets, query, totalPets);
   }
 
   async getOne(getPetDto: GetPetDto, userId: number): Promise<PetDto> {
-    const pet = await this.petEntityRepository.findOne(getPetDto.id, {
-      relations: ['user', 'petType', 'image'],
+    const pet = await this.prismaService.pet.findUnique({
+      where: { id: +getPetDto.id },
+      select: {
+        bio: true,
+        id: true,
+        image: {
+          select: {
+            hash: true,
+            imageStatus: true,
+            originalDimensions: true,
+          },
+        },
+        petType: true,
+        userId: true,
+      },
     });
 
     if (!pet) {
       throw new NotFoundException('Pet not found');
     }
 
-    if (pet?.user?.id !== userId) {
+    if (pet.userId !== userId) {
       throw new NotFoundException('Pet not found');
     }
 
@@ -46,18 +69,10 @@ export class PetsService {
   }
 
   async deleteOne(deletePetDto: DeletePetDto, userId: number) {
-    const pet = await this.petEntityRepository.findOne(deletePetDto.id, {
-      relations: ['user'],
+    const pet = await this.getOne(deletePetDto, userId);
+
+    await this.prismaService.pet.delete({
+      where: { id: +pet.id },
     });
-
-    if (!pet) {
-      throw new NotFoundException('Pet not found');
-    }
-
-    if (pet?.user?.id !== userId) {
-      throw new NotFoundException('Pet not found');
-    }
-
-    await this.petEntityRepository.softDelete(deletePetDto.id);
   }
 }

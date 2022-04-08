@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppConfigModule } from 'src/config/app/configuration.module';
 import { JwtConfigurationModule } from 'src/config/jwt/configuration.module';
 import { JwtConfigService } from 'src/config/jwt/configuration.service';
-import { UserEntity } from 'src/models/users/entities/user.entity';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { UsersService } from '../users/services/users.service';
 import { AuthService } from './auth.service';
 import { JwtRefreshStrategy } from './strategy/jwt-refresh.strategy';
@@ -11,7 +11,6 @@ import { JwtStrategy } from './strategy/jwt.strategy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity]),
     JwtConfigurationModule,
     JwtModule.registerAsync({
       imports: [JwtConfigurationModule],
@@ -23,8 +22,15 @@ import { JwtStrategy } from './strategy/jwt.strategy';
         },
       }),
     }),
+    AppConfigModule,
   ],
-  providers: [JwtStrategy, JwtRefreshStrategy, AuthService, UsersService],
+  providers: [
+    JwtStrategy,
+    JwtRefreshStrategy,
+    AuthService,
+    UsersService,
+    PrismaService,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

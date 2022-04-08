@@ -15,11 +15,9 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Pagination } from 'nestjs-typeorm-paginate';
 import { UserId } from 'src/common/decorators/user.decorator';
 import { PaginationParamsDto } from 'src/common/dtos/paginationParams.dto';
 import { RequestValidationPipe } from 'src/common/pipes/RequestValidationPipe.pipe';
-import { PetEntity } from 'src/models/pets/entities/pet.entity';
 import JwtAuthenticationGuard from '../auth/guards/jwt.guard';
 import { CreatePetDTO } from './dtos/createPet.dto';
 import { DeletePetDto } from './dtos/deletePet.dto';
@@ -55,10 +53,7 @@ export class PetsController {
   @UsePipes(RequestValidationPipe)
   @UseInterceptors(ClassSerializerInterceptor)
   @UseGuards(JwtAuthenticationGuard)
-  getAll(
-    @Query() query: PaginationParamsDto = { limit: 10, page: 1 },
-    @UserId() userId: number,
-  ): Promise<Pagination<PetDto>> {
+  getAll(@Query() query: PaginationParamsDto, @UserId() userId: number) {
     return this.petsService.getAll(query, userId);
   }
 
@@ -92,7 +87,7 @@ export class PetsController {
     @Body() updatePetDto: UpdatePetDTO,
     @UploadedFile() image: Express.Multer.File,
     @UserId() userId: number,
-  ): Promise<PetEntity> {
+  ) {
     return this.updatePetService.updateOne(
       updatePetParamDto,
       updatePetDto,

@@ -1,26 +1,23 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bull';
 import imageSize from 'image-size';
 import { ISize } from 'image-size/dist/types/interface';
 import { generateToken } from 'src/common/utils/generateToken';
-import { ImageEntity } from 'src/models/image/entities/image.entity';
-import { ImageType } from 'src/models/image/enums/image-type.enum';
-import { Repository } from 'typeorm';
+import { ImageType } from 'src/common/enums/image/enums/image-type.enum';
 import * as sharp from 'sharp';
 import { createDirectory, PROJECT_DIR } from 'src/common/utils/file-system';
-import { ImageStatus } from 'src/models/image/enums/image-status.enum';
+import { ImageStatus } from 'src/common/enums/image-status.enum';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 @Injectable()
 export class ImagesService {
   private readonly logger = new Logger(ImagesService.name);
 
   constructor(
-    @InjectRepository(ImageEntity)
-    private imageEntityRepository: Repository<ImageEntity>,
     @InjectQueue('imageOptimizationQueue')
     private readonly imageOptimizationQueue: Queue,
+    private prismaService: PrismaService,
   ) {}
 
   private getImageDimensions(image: Express.Multer.File): Promise<ISize> {
@@ -119,6 +116,12 @@ export class ImagesService {
       };
     } catch (error) {
       console.log(error);
+
+      return {
+        isValid: false,
+        errors: {},
+        imageMeta: {},
+      };
     }
   }
 
@@ -144,21 +147,22 @@ export class ImagesService {
     originalName: string,
     type: string,
   ) {
-    const image = new ImageEntity();
-    image.hash = await generateToken({ byteLength: 32 });
-    image.imageSize = size;
-    image.originalDimensions = JSON.stringify(dimensions);
-    image.originalName = originalName;
-    image.imageType = this.parseImageType(mimetype);
-
-    const imageEntity = await this.imageEntityRepository.save(image);
-
-    await createDirectory(`${PROJECT_DIR}/public/images/${type}/${image.hash}`);
+    const imageHash = await generateToken({ byteLength: 32 });
+    const imageEntity = await this.prismaService.image.create({
+      data: {
+        hash: imageHash,
+        imageSize: size,
+        originalDimensions: JSON.stringify(dimensions),
+        originalName,
+        imageType: this.parseImageType(mimetype),
+      },
+    });
+    await createDirectory(`${PROJECT_DIR}/public/images/${type}/${imageHash}`);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     await sharp(imageFile.buffer)
       .toFormat('jpeg')
       .toFile(
-        `${PROJECT_DIR}/public/images/${type}/${image.hash}/original.jpeg`,
+        `${PROJECT_DIR}/public/images/${type}/${imageHash}/original.jpeg`,
       );
 
     await this.imageOptimizationQueue.add('optimize', {
@@ -170,7 +174,9 @@ export class ImagesService {
   }
 
   public async optimizeImage(id: number, type: string) {
-    const image = await this.imageEntityRepository.findOne(id);
+    const image = await this.prismaService.image.findUnique({
+      where: { id },
+    });
     if (image) {
       try {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -185,14 +191,22 @@ export class ImagesService {
               image.hash
             }/optimized.jpeg`,
           );
-        image.imageStatus = ImageStatus.OPTIMIZED;
-        image.imageOptimizationLog = JSON.stringify(result);
-        await this.imageEntityRepository.save(image);
+        await this.prismaService.image.update({
+          where: { id },
+          data: {
+            imageStatus: ImageStatus.OPTIMIZED,
+            imageOptimizationLog: JSON.stringify(result),
+          },
+        });
       } catch (error) {
         this.logger.error(error);
-        image.imageStatus = ImageStatus.ERROR;
-        image.imageOptimizationLog = JSON.stringify(error);
-        await this.imageEntityRepository.save(image);
+        await this.prismaService.image.update({
+          where: { id },
+          data: {
+            imageStatus: ImageStatus.ERROR,
+            imageOptimizationLog: JSON.stringify(error),
+          },
+        });
       }
     } else {
       this.logger.error(`Image with id ${id} not found in database`);

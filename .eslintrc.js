@@ -59,6 +59,7 @@ module.exports = {
     'unicorn/no-null': 'off',
     'unicorn/import-style': 'off',
     '@typescript-eslint/no-misused-promises': 'off',
-    'unicorn/prefer-module': 'off'
+    'unicorn/prefer-module': 'off',
+    'unicorn/prefer-ternary': 'off'
   },
 };

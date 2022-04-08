@@ -1,23 +1,14 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { PetTypeEntity } from 'src/models/pet-types/entities/pet-type.entity';
-import { PetEntity } from 'src/models/pets/entities/pet.entity';
-import { UserEntity } from 'src/models/users/entities/user.entity';
 import { ImagesService } from 'src/modules/images/images.service';
-import { Repository } from 'typeorm';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { CreatePetDTO } from '../dtos/createPet.dto';
 import { PetDto } from '../dtos/pet.dto';
 
 @Injectable()
 export class CreatePetService {
   constructor(
-    @InjectRepository(PetEntity)
-    private petEntityRepository: Repository<PetEntity>,
-    @InjectRepository(PetTypeEntity)
-    private petTypeEntityRepository: Repository<PetTypeEntity>,
-    @InjectRepository(UserEntity)
-    private userEntityRepository: Repository<UserEntity>,
     private imagesService: ImagesService,
+    private prismaService: PrismaService,
   ) {}
 
   async createPet(
@@ -41,14 +32,10 @@ export class CreatePetService {
       ]);
     }
 
-    const pet = new PetEntity();
-    pet.bio = createPetDto.bio;
-    pet.name = createPetDto.name;
-
     if (createPetDto.typeId) {
-      const petType = await this.petTypeEntityRepository.findOne(
-        createPetDto.typeId,
-      );
+      const petType = await this.prismaService.petType.findUnique({
+        where: { id: Number(createPetDto.typeId) },
+      });
 
       if (!petType) {
         throw new UnprocessableEntityException([
@@ -60,13 +47,7 @@ export class CreatePetService {
           },
         ]);
       }
-
-      pet.petType = petType;
-    } else {
-      pet.petType = null;
     }
-
-    const user = await this.userEntityRepository.findOne(userId);
 
     const { size, dimensions, mimetype, originalName } =
       validateImageResult.imageMeta;
@@ -80,9 +61,27 @@ export class CreatePetService {
       'pet-images',
     );
 
-    pet.image = imageEntity;
-    pet.user = user;
-
-    return await this.petEntityRepository.save(pet);
+    return this.prismaService.pet.create({
+      data: {
+        name: createPetDto.name,
+        bio: createPetDto.bio,
+        petTypeId: Number(createPetDto.typeId) ?? null,
+        imageId: imageEntity.id,
+        userId: userId,
+      },
+      select: {
+        id: true,
+        name: true,
+        bio: true,
+        petType: true,
+        image: {
+          select: {
+            hash: true,
+            imageStatus: true,
+            originalDimensions: true,
+          },
+        },
+      },
+    });
   }
 }

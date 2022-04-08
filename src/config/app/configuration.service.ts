@@ -21,4 +21,12 @@ export class AppConfigService {
   get port(): number {
     return this.configService.get<number>('app.port');
   }
+
+  get passwordSalt(): string {
+    return this.configService.get<string>('app.passwordSalt');
+  }
+
+  get tokenSalt(): string {
+    return this.configService.get<string>('app.tokenSalt');
+  }
 }
