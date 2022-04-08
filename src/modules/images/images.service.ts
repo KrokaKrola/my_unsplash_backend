@@ -116,6 +116,12 @@ export class ImagesService {
       };
     } catch (error) {
       console.log(error);
+
+      return {
+        isValid: false,
+        errors: {},
+        imageMeta: {},
+      };
     }
   }
 

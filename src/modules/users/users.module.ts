@@ -8,6 +8,7 @@ import { UsersLoginService } from './services/users-login.service';
 import { UsersService } from './services/users.service';
 import { AuthModule } from '../auth/auth.module';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { AppConfigModule } from 'src/config/app/configuration.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
     BullModule.registerQueue({
       name: 'registrationEmailsQueue',
     }),
+    AppConfigModule,
   ],
   providers: [
     UsersProcessor,

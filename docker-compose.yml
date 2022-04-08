@@ -1,29 +1,29 @@
 version: '3.7'
 
 services:
-  nest:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    depends_on:
-      - database
-      - redis
-    ports:
-      - "${APP_PORT}:3000"
-    env_file:
-      - .env.development
-    environment:
-      APP_ENV: development
-      APP_PORT: ${APP_PORT}
-    volumes:
-      - .:/usr/app
-      - /usr/app/node_modules
-    networks:
-      app:
+  # nest:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - database
+  #     - redis
+  #   ports:
+  #     - "${APP_PORT}:3000"
+  #   env_file:
+  #     - .env.development
+  #   environment:
+  #     APP_ENV: development
+  #     APP_PORT: ${APP_PORT}
+  #   volumes:
+  #     - .:/usr/app
+  #     - /usr/app/node_modules
+  #   networks:
+  #     app:
   database:
     image: postgres
     ports:
-      - "5435:${DATABASE_PORT}"
+      - "5432:${DATABASE_PORT}"
     environment:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}

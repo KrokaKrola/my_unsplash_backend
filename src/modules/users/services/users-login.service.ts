@@ -22,6 +22,18 @@ export class UsersLoginService {
       where: {
         username: loginUserDto.username,
       },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        username: true,
+        createdAt: false,
+        deletedAt: false,
+        currentHashedRefreshToken: false,
+        password: true,
+        updatedAt: false,
+      },
     });
 
     if (!user) {
@@ -45,6 +57,8 @@ export class UsersLoginService {
     response.setHeader('Set-Cookie', [accessToken, refreshToken.cookie]);
 
     await this.usersService.setCurrentRefreshToken(refreshToken.token, user.id);
+
+    delete user.password;
 
     return user;
   }

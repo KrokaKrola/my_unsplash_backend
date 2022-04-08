@@ -19,7 +19,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
           },
           data: {
             password: crypto
-              .pbkdf2Sync(result.password, 'password_salt', 1000, 64, 'sha512')
+              .pbkdf2Sync(
+                result.password,
+                process.env.APP_PASSWORD_SALT,
+                1000,
+                64,
+                'sha512',
+              )
               .toString('hex'),
           },
         });

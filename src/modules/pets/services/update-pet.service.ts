@@ -97,6 +97,19 @@ export class UpdatePetService {
         petTypeId: newPetType ? newPetType.id : pet.petTypeId,
         imageId: newImage ? newImage.id : pet.imageId,
       },
+      select: {
+        id: true,
+        name: true,
+        bio: true,
+        petType: true,
+        image: {
+          select: {
+            hash: true,
+            imageStatus: true,
+            originalDimensions: true,
+          },
+        },
+      },
     });
   }
 }

@@ -34,7 +34,7 @@ export class CreatePetService {
 
     if (createPetDto.typeId) {
       const petType = await this.prismaService.petType.findUnique({
-        where: { id: createPetDto.typeId },
+        where: { id: Number(createPetDto.typeId) },
       });
 
       if (!petType) {
@@ -65,9 +65,22 @@ export class CreatePetService {
       data: {
         name: createPetDto.name,
         bio: createPetDto.bio,
-        petTypeId: createPetDto.typeId ?? null,
+        petTypeId: Number(createPetDto.typeId) ?? null,
         imageId: imageEntity.id,
         userId: userId,
+      },
+      select: {
+        id: true,
+        name: true,
+        bio: true,
+        petType: true,
+        image: {
+          select: {
+            hash: true,
+            imageStatus: true,
+            originalDimensions: true,
+          },
+        },
       },
     });
   }

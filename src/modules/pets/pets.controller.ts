@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -15,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserId } from 'src/common/decorators/user.decorator';
+import { PaginationParamsDto } from 'src/common/dtos/paginationParams.dto';
 import { RequestValidationPipe } from 'src/common/pipes/RequestValidationPipe.pipe';
 import JwtAuthenticationGuard from '../auth/guards/jwt.guard';
 import { CreatePetDTO } from './dtos/createPet.dto';
@@ -47,16 +49,13 @@ export class PetsController {
     return this.createPetService.createPet(createPetDto, image, userId);
   }
 
-  // @Get('/')
-  // @UsePipes(RequestValidationPipe)
-  // @UseInterceptors(ClassSerializerInterceptor)
-  // @UseGuards(JwtAuthenticationGuard)
-  // getAll(
-  //   @Query() query: PaginationParamsDto = { limit: 10, page: 1 },
-  //   @UserId() userId: number,
-  // ): Promise<Pagination<PetDto>> {
-  //   return this.petsService.getAll(query, userId);
-  // }
+  @Get('/')
+  @UsePipes(RequestValidationPipe)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(JwtAuthenticationGuard)
+  getAll(@Query() query: PaginationParamsDto, @UserId() userId: number) {
+    return this.petsService.getAll(query, userId);
+  }
 
   @Get('/:id')
   @UsePipes(RequestValidationPipe)

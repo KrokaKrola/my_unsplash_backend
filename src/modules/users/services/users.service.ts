@@ -7,12 +7,14 @@ import { Request, Response } from 'express';
 import { AuthService } from 'src/modules/auth/auth.service';
 import * as crypto from 'crypto';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { AppConfigService } from 'src/config/app/configuration.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private authService: AuthService,
     private prismaService: PrismaService,
+    private appConfigService: AppConfigService,
   ) {}
 
   async findOneByEmail(email: string) {
@@ -37,7 +39,13 @@ export class UsersService {
 
   verifyPassword(password: crypto.BinaryLike, hashedPassword: string) {
     const hash = crypto
-      .pbkdf2Sync(password, 'password_salt', 1000, 64, 'sha512')
+      .pbkdf2Sync(
+        password,
+        this.appConfigService.passwordSalt,
+        1000,
+        64,
+        'sha512',
+      )
       .toString('hex');
 
     return hash === hashedPassword;
@@ -45,7 +53,7 @@ export class UsersService {
 
   verifyRefreshToken(token: crypto.BinaryLike, hashedToken: string) {
     const hash = crypto
-      .pbkdf2Sync(token, 'token_salt', 500, 64, 'sha512')
+      .pbkdf2Sync(token, this.appConfigService.tokenSalt, 500, 64, 'sha512')
       .toString('hex');
 
     return hash === hashedToken;
@@ -53,7 +61,13 @@ export class UsersService {
 
   async setCurrentRefreshToken(refreshToken: string, userId: number) {
     const hashedToken = crypto
-      .pbkdf2Sync(refreshToken, 'token_salt', 500, 64, 'sha512')
+      .pbkdf2Sync(
+        refreshToken,
+        this.appConfigService.tokenSalt,
+        500,
+        64,
+        'sha512',
+      )
       .toString('hex');
     return this.prismaService.user.update({
       where: { id: userId },

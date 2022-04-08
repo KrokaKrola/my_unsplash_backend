@@ -18,7 +18,6 @@ import { AuthService } from 'src/modules/auth/auth.service';
 import { Response } from 'express';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { generateToken } from 'src/common/utils/generateToken';
-import { User } from '@prisma/client';
 
 @Injectable()
 export class UsersRegistrationService {
@@ -96,7 +95,13 @@ export class UsersRegistrationService {
   async registerEmailVerify(
     response: Response,
     registerEmailVerify: RegisterEmailVerifyDto,
-  ): Promise<User> {
+  ): Promise<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+    id: number;
+  }> {
     const verificationEmail =
       await this.prismaService.emailVerification.findFirst({
         where: {
@@ -168,6 +173,18 @@ export class UsersRegistrationService {
         lastName: registrationCandidate.lastName,
         username: registrationCandidate.username,
         password: registrationCandidate.password,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        username: true,
+        createdAt: false,
+        deletedAt: false,
+        currentHashedRefreshToken: false,
+        password: false,
+        updatedAt: false,
       },
     });
 

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { AppConfigModule } from 'src/config/app/configuration.module';
 import { JwtConfigurationModule } from 'src/config/jwt/configuration.module';
 import { JwtConfigService } from 'src/config/jwt/configuration.service';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
@@ -21,6 +22,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
         },
       }),
     }),
+    AppConfigModule,
   ],
   providers: [
     JwtStrategy,
